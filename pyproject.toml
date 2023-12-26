@@ -12,6 +12,8 @@ pyyaml = "^6.0.1"
 websocket-client = "^1.6.4"
 numpy = "^1.26.2"
 telethon = "^1.33.1"
+networkx = "^3.2.1"
+matplotlib = "^3.8.2"
 
 
 [build-system]

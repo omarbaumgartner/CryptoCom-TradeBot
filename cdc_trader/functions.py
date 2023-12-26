@@ -22,6 +22,7 @@ def get_instruments():
     # REST get instruments
     response = requests.get(REST_BASE + 'public/get-instruments')
     instruments = []
+    instruments_names = []
     for instrument in response.json()['result']['instruments']:
         instrument = {
             'instrument_name': instrument['instrument_name'],
@@ -40,7 +41,8 @@ def get_instruments():
             'last_update_date': instrument['last_update_date'],
         }
         instruments.append(instrument)
-    return instruments
+        instruments_names.append(instrument['instrument_name'])
+    return instruments, instruments_names
 
 
 def get_orderbook(instrument_name, depth=10):
@@ -60,6 +62,7 @@ def get_candlesticks(instrument_name, interval):
     return response.json()['result']
 
 
+# 24h 
 def get_ticker(instrument_name=None):
     if instrument_name is None:
         params = {}
