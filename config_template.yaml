@@ -1,0 +1,21 @@
+api:
+  key: none
+  secret_key: none
+
+  rest_api:
+    sandbox: https://uat-api.3ona.co/v2/
+    production: https://api.crypto.com/v2/
+
+  websocket_api:
+    sandbox:
+      market_data: wss://uat-stream.3ona.co/v2/market
+      user_data: wss://uat-stream.3ona.co/v2/user
+
+    production:
+      market_data: wss://stream.crypto.com/v2/market
+      user_data: wss://stream.crypto.com/v2/user
+
+telegram:
+  app_api_id: "none"
+  app_api_hash: "none"
+  owner_username: "none"

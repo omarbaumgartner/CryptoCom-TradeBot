@@ -1,0 +1,7 @@
+secret.yaml
+draft/
+.vscode/
+__pycache__/
+bot.session
+bot.session-journal
+config.yaml
