@@ -16,6 +16,14 @@ config = load_config("config.yaml")
 api_config = config['api']
 telegram_config = config['telegram']
 
+
+TRADING_FEE_PERCENTAGE = 0.0750
+DESIRED_PROFIT_PERCENTAGE = 1
+MIN_SPREAD_PERCENTAGE = 0.04
+START_CURRENCIES = ["BTC", "ETH", "USDT", "CRO", "LTC", "SOL"]
+END_CURRENCIES = ["BTC", "ETH", "USDT", "CRO", "LTC", "SOL"]
+MAX_DEPTH = 4
+
 REST_BASE = api_config['rest_api'][ENV]
 WS_MARKET = api_config['websocket_api'][ENV]['market_data']
 WS_USER = api_config['websocket_api'][ENV]['user_data']

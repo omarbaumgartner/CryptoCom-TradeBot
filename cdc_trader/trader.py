@@ -1,8 +1,8 @@
 import asyncio
 from functions import *
-from env import commands_queue
+from env import commands_queue, TRADING_FEE_PERCENTAGE, DESIRED_PROFIT_PERCENTAGE, MIN_SPREAD_PERCENTAGE, START_CURRENCIES, END_CURRENCIES, MAX_DEPTH
 from telegram import send_telegram_message, initialize_telegram
-
+from thinker import *
 # Add other necessary imports and functions here
 
 # Method	Limit
@@ -21,6 +21,7 @@ from telegram import send_telegram_message, initialize_telegram
 # Add other necessary imports and functions here
 # trading method : crypto-to-crypto arbitrage
 
+
 async def main():
     try:
         # Initialize bot and authentication
@@ -28,16 +29,9 @@ async def main():
 
         # Get initial account summary
         account_summary = get_account_summary()
-        # await send_telegram_message(f"Initial Account Summary: {account_summary}")
-        # asyncio.run(main_telegram())
 
-        # send_telegram_message(f"Initial Account Summary: {account_summary}")
-        # await send_telegram_message(f"Initial Account Summary: {account_summary}")
-        # Start the Telegram thread
-        # await main_telegram()
         # Main trading loop
         while True:
-
             # Consume commands from the queue
             if len(commands_queue) > 0:
                 for command in commands_queue:
@@ -45,16 +39,33 @@ async def main():
                         return
 
             # Monitor market data (tickers, candlesticks)
-            tickers = get_ticker()
-            # print('Tick', commands_queue)
-            # await send_telegram_message(f"Tick")
+            ticker = get_ticker()
 
-            # print(tickers)
-            # send_telegram_message(f"Tickers: {tickers}")
+            # print("Getting sorted usable instruments...")
+            instrument_names = get_usable_instruments(
+                ticker, MIN_SPREAD_PERCENTAGE)
 
-            # Implement trading decision logic
+            # print(f"Getting possible trading sequences with start currency {START_CURRENCIES} and end currencies {END_CURRENCIES} and max depth of {MAX_DEPTH} ...")
+            possible_trading_sequences = generate_possible_trading_sequences(
+                instrument_names, START_CURRENCIES, END_CURRENCIES, MAX_DEPTH)
+            # print("Generating readable instrument pairs for each sequence")
+            possible_instrument_pairs = generate_readable_instrument_pairs(
+                possible_trading_sequences)
 
-            # Risk management
+            # print("Creating trading sequences...")
+            ts_l = create_trading_sequences(
+                possible_instrument_pairs, instrument_names)
+
+            # print("Final trade sequences possible", len(ts_l.trade_sequences))
+
+            top_sequence = ts_l.get_top_trade_sequence()
+            if top_sequence:
+                print("Top trade sequence with return of", top_sequence.compound_return)
+                # TODO : take into account trading fee in compound calculator
+                await send_telegram_message(
+                    f"Top trade sequence with return of {top_sequence.compound_return}")
+            else:
+                print("No top sequence")
 
             # Place orders if conditions are met
             # Example: create_order("BTC_USDT", "BUY", "LIMIT", price=50000, quantity=0.001)
@@ -65,7 +76,7 @@ async def main():
             # send_telegram_message("Order placed successfully")
 
             # Sleep between iterations
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
 
     except Exception as e:
         # send_telegram_message(f"Error: {e}")
