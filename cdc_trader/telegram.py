@@ -1,5 +1,5 @@
 from telethon import events, TelegramClient
-from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue
+from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED
 import asyncio
 from functions import *
 
@@ -46,18 +46,18 @@ async def handle_messages(event):
 
     elif 'cancel all' in event.raw_text.lower():
         await event.reply("Canceling all orders")
-        instruments = get_instruments()
-        print(instruments)
-        for instrument in instruments:
-            response = cancel_all_orders(instrument['instrument_name'])
+        _, instrument_names, _ = get_instruments()
+        for instrument_name in instrument_names:
+            response = cancel_all_orders(instrument_name)
             if response['code'] == 0:
-                await event.reply(f"Orders for {instrument['instrument_name']} canceled")
+                await event.reply(f"Orders for {instrument_name} canceled")
             else:
-                await event.reply(f"Error canceling orders for {instrument['instrument_name']}")
+                await event.reply(f"Error canceling orders for {instrument_name}")
 
 
 async def send_telegram_message(message):
-    await client.send_message(TEL_OWNER_USERNAME, message)
+    if not TELEGRAM_MESSAGING_DISABLED:
+        await client.send_message(TEL_OWNER_USERNAME, message)
     return
 
 

@@ -19,10 +19,9 @@ telegram_config = config['telegram']
 
 TRADING_FEE_PERCENTAGE = 0.0750
 DESIRED_PROFIT_PERCENTAGE = 1
-MIN_SPREAD_PERCENTAGE = 0.04
-START_CURRENCIES = ["BTC", "ETH", "USDT", "CRO", "LTC", "SOL"]
-END_CURRENCIES = ["BTC", "ETH", "USDT", "CRO", "LTC", "SOL"]
-MAX_DEPTH = 4
+
+
+
 
 REST_BASE = api_config['rest_api'][ENV]
 WS_MARKET = api_config['websocket_api'][ENV]['market_data']
@@ -34,3 +33,4 @@ TEL_API_ID = telegram_config['app_api_id']
 TEL_API_HASH = telegram_config['app_api_hash']
 TEL_OWNER_USERNAME = telegram_config['owner_username']
 TEL_BOT_TOKEN = telegram_config['bot_token']
+TELEGRAM_MESSAGING_DISABLED = True

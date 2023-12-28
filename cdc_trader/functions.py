@@ -23,8 +23,10 @@ def get_instruments():
     response = requests.get(REST_BASE + 'public/get-instruments')
     instruments = []
     instruments_names = []
+    instruments_dict = {}
     for instrument in response.json()['result']['instruments']:
-        instrument = {
+        instruments_dict[instrument['instrument_name']] = instrument
+        instrument_formatted = {
             'instrument_name': instrument['instrument_name'],
             'base_currency': instrument['base_currency'],
             'quote_currency': instrument['quote_currency'],
@@ -40,9 +42,10 @@ def get_instruments():
             'quantity_decimals': instrument['quantity_decimals'],
             'last_update_date': instrument['last_update_date'],
         }
-        instruments.append(instrument)
+
+        instruments.append(instrument_formatted)
         instruments_names.append(instrument['instrument_name'])
-    return instruments, instruments_names
+    return instruments, instruments_names, instruments_dict
 
 
 def get_orderbook(instrument_name, depth=10):
@@ -62,7 +65,7 @@ def get_candlesticks(instrument_name, interval):
     return response.json()['result']
 
 
-# 24h 
+# 24h
 def get_ticker(instrument_name=None):
     if instrument_name is None:
         params = {}
@@ -89,7 +92,7 @@ def get_account_summary(currency=None):
 
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
-    return response.json()['result']
+    return response.json()['result']['accounts']
 
 
 def create_order(instrument_name, side, type, price=None, quantity=None, notional=None,

@@ -1,98 +1,18 @@
 import copy
 from functions import *
 from env import TRADING_FEE_PERCENTAGE, DESIRED_PROFIT_PERCENTAGE
+from classes import *
 
+# Terminology :
+# instrument : a tradable asset that can be bought or sold
 
-class SingleTradeSequence:
-    def __init__(self):
-        self.instrument_names = []
-        self.tickers = []
-        self.order_of_trades = []
-        self.percentage_spreads = []
-        self.compound_return = 0
-
-    def add_instrument_name(self, instrument_name):
-        # print("Adding instrument name", instrument_name)
-        self.instrument_names.append(instrument_name)
-        self.tickers.append({})
-
-    def get_instruments_names(self):
-        return self.instrument_names
-
-    def calculate_compound_return(self, returns):
-        compound_return = 1
-        for r in returns:
-            compound_return *= 1 + (r / 100)  # Convert percentage to decimal
-        return (compound_return - 1)*100
-
-    def update_tickers(self, ticker):
-
-        # minimum_percentage_increase_decrease = DESIRED_PROFIT_PERCENTAGE + \
-        #         2 * TRADING_FEE_PERCENTAGE
-
-        # self.minimum_percentage_increase_decrease_per_trade = minimum_percentage_increase_decrease ** (
-        #     1/len(self.order_of_trades))
-
-        for i in range(len(self.instrument_names)):
-            self.tickers[i] = ticker[self.instrument_names[i]]
-            self.tickers[i]['a'] = float(self.tickers[i]['a'])
-            self.tickers[i]['b'] = float(self.tickers[i]['b'])
-            self.percentage_spreads.append(
-                100*((self.tickers[i]['a'] - self.tickers[i]['b']) / self.tickers[i]['b']))
-        self.compound_return = self.calculate_compound_return(
-            self.percentage_spreads)
-
-    def display_tickers(self):
-        print("Instrument name Ticker Order of trades")
-        for i in range(len(self.instrument_names)):
-            print(
-                f"{self.order_of_trades[i]} {self.percentage_spreads[i]}%")
-
-
-class TradeSequences:
-    def __init__(self):
-        self.trade_sequences = []
-
-    def add_trade_sequence(self, trade_sequence):
-        self.trade_sequences.append(trade_sequence)
-
-    # Update ticker of each instrument in each trade sequence contained in self.trade_sequences
-    def update_trade_sequences_tickers(self):
-        ticker_all = get_ticker()
-        instruments = []
-        for ts in self.trade_sequences:
-            ts_instruments = ts.get_instruments_names()
-            instruments += ts_instruments
-            # remove duplicates
-            instruments = list(set(instruments))
-        # keep in ticker only the instruments that are in instruments
-        ticker = {}
-        for tick in ticker_all:
-            if tick['i'] in instruments:
-                ticker[tick['i']] = tick
-        # update tickers
-        for ts in self.trade_sequences:
-            ts.update_tickers(ticker)
-
-    def get_top_trade_sequence(self):
-        self.update_trade_sequences_tickers()
-        if len(self.trade_sequences) == 0:
-            pass
-            #print("No trade sequences")
-
-        top_trade_sequence_return = 0
-        top_trade_sequence = None
-        for ts in self.trade_sequences:
-            if ts.compound_return > top_trade_sequence_return:
-                top_trade_sequence = ts
-                top_trade_sequence_return = ts.compound_return
-        return top_trade_sequence
+# for ts in ts_l.trade_sequences:
+#     ts.display_tickers()
+#     input()
 
 
 # Get instruments from ticker that could be used for trading
-
-
-def get_usable_instruments(ticker, min_spread_percentage=1):
+def get_usable_instruments(ticker, min_spread_percentage):
     instruments = {}
     for tick in ticker:
         # Cleaning based on tests
@@ -102,15 +22,12 @@ def get_usable_instruments(ticker, min_spread_percentage=1):
                 pass
             else:
                 # if spread is greater than minimum_percentage_increase_decrease
-                if 100*((float(tick["a"]) - float(tick["b"])) / float(tick["b"])) > min_spread_percentage:
-                    try:
-                        instruments[tick["i"]] = tick["i"]
-                    except:
-                        print("Error with tick", tick)
+                if 100*((float(tick["a"]) - float(tick["b"])) / float(tick["b"])) >= min_spread_percentage:
+                    instruments[tick["i"]] = tick["i"]
+
     return dict(sorted(instruments.items()))
 
-# Function to check if 'USD' and 'USDT' appear consecutively
-# TODO : make it work for any number of currencies
+# Function to check if 'USD' and 'USDT' appear consecutively TODO : make it work for any number of currencies
 
 
 def contains_consecutive_usd_usdt(pair):
@@ -120,9 +37,6 @@ def contains_consecutive_usd_usdt(pair):
     return False
 
 # Get possible trading sequences that start with start_currency and end with one of the possible end_currencies
-# TODO : make start_currency also take one to many possible currencies
-
-# ['CRO', 'ETH', 'USDT']
 
 
 def generate_possible_trading_sequences(usable_instruments, start_currencies, end_currencies, max_depth=3):
@@ -133,7 +47,7 @@ def generate_possible_trading_sequences(usable_instruments, start_currencies, en
 
     final_queue = []
 
-    #print("Looking for arbitrage opportunities...")
+    # print("Looking for arbitrage opportunities...")
     stop_loop = False
 
     while stop_loop == False:
@@ -195,14 +109,6 @@ def generate_possible_trading_sequences(usable_instruments, start_currencies, en
 
     return final_queue
 
-
-def has_duplicates_middle(lst):
-    seen = set()
-    for item in lst[1:]:
-        if item in seen:
-            return True
-        seen.add(item)
-    return False
 # Generate readable instrument pairs in order to create trade orders
 
 
@@ -235,9 +141,10 @@ def create_trading_sequences(possible_instrument_pairs, instrument_names):
     return ts_l
 
 
-# Terminology :
-# instrument : a tradable asset that can be bought or sold
-
-# for ts in ts_l.trade_sequences:
-#     ts.display_tickers()
-#     input()
+def has_duplicates_middle(lst):
+    seen = set()
+    for item in lst[1:]:
+        if item in seen:
+            return True
+        seen.add(item)
+    return False
