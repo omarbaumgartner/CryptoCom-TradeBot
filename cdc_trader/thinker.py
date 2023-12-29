@@ -1,17 +1,12 @@
 import copy
 from functions import *
-from env import TRADING_FEE_PERCENTAGE, DESIRED_PROFIT_PERCENTAGE
+from env import *
 from classes import *
-
-# Terminology :
-# instrument : a tradable asset that can be bought or sold
-
-# for ts in ts_l.trade_sequences:
-#     ts.display_tickers()
-#     input()
-
+from calcul import *
 
 # Get instruments from ticker that could be used for trading
+
+
 def get_usable_instruments(ticker, min_spread_percentage):
     instruments = {}
     for tick in ticker:
@@ -148,3 +143,205 @@ def has_duplicates_middle(lst):
             return True
         seen.add(item)
     return False
+
+
+def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, instruments_dict) -> list[SingleTradeSequence]:
+    kept_sequences = []
+    for sequence in sequences:
+        # Getting number of trades
+        num_trades = len(sequence.instrument_names)
+        # Calculating profit percentage per trade
+        profit_percentage_per_trade = (
+            MIN_PROFITS_PERCENTAGE ** (1/num_trades) + TRADING_FEE_PERCENTAGE)
+        available_quantities = []
+        future_values = []
+        # check if base or quote
+        initial_currency = sequence.order_of_trades[0].split("_")[0]
+
+        available_quantity = accounts[initial_currency]['available']
+        available_quantities.append(available_quantity)
+        future_values.append(available_quantity)
+        min_quantity = float(
+            instruments_dict[sequence.instrument_names[0]]['min_quantity'])
+
+        min_decimals = int(instruments_dict[sequence.instrument_names[0]
+                                            ]['quantity_decimals'])
+
+        # Min price for buy order for one token
+        ask_price = float(
+            sequence.tickers[0]['a']) * (1 - profit_percentage_per_trade/100)
+        # Max price for sell order for one token
+        bid_price = float(
+            sequence.tickers[0]['b']) * (1 + profit_percentage_per_trade/100)
+        checks = []
+        base, quote = sequence.instrument_names[0].split("_")
+        if initial_currency == sequence.instrument_names[0].split("_")[0]:
+            is_base = True
+        else:
+            is_base = False
+
+        # BASE CURRENCY (CRYPTO)
+        if is_base:
+            side = 'sell'
+            price = bid_price
+            # If we have enough quantity
+            if available_quantity >= min_quantity:
+                # We convert it to quote currency
+                # This calculates the quantity in terms of the token being sold.
+                available_quantity = (
+                    available_quantity / ask_price) * (1 - TRADING_FEE_PERCENTAGE/100)
+                quantity_value = available_quantity * ask_price
+                print(
+                    f"Sell {available_quantity} {base} for {quantity_value} {quote}")
+
+                # available_quantity = math.floor(
+                #     available_quantity * 10**min_decimals) / 10**min_decimals
+                checks.append([side, True])
+            else:
+                checks.append([side, False])
+
+        # QUOTE CURRENCY (FIAT/STABLECOIN or CRYPTO)
+        else:
+            side = 'buy'
+            price = ask_price
+            # This calculates the quantity in terms of the token being bought.
+
+            future_tokens_quantity = (
+                available_quantity / bid_price) * (1 - TRADING_FEE_PERCENTAGE/100)
+            # This calculates the value of the quantity in terms of the token being sold.
+            # rounded_future_tokens_quantity = math.floor(
+            #     future_tokens_quantity * 10**min_decimals) / 10**min_decimals
+
+            if future_tokens_quantity >= min_quantity:
+                checks.append([side, True])
+                available_quantity = future_tokens_quantity
+                quantity_value = available_quantity * bid_price
+                print(
+                    f"Buy {available_quantity} {quote} for {available_quantity} {base}")
+
+            else:
+                checks.append([side, False])
+                # return checks, available_quantities
+
+        available_quantities.append(available_quantity)
+        future_values.append(quantity_value)
+
+        # if side == 'sell':
+        #     quantity =
+        trade = {
+            "instrument_name": sequence.instrument_names[0],
+            "side": side,
+            "price": price,
+            "quantity": available_quantity
+        }
+        sequence.add_trade_infos(trade)
+
+        # Check rest of the sequence
+        for ticker, order_of_trade, instrument_name in zip(sequence.tickers[1:], sequence.order_of_trades[1:], sequence.instrument_names[1:]):
+            base, quote = instrument_name.split("_")
+
+            # invert side
+            initial_currency = order_of_trade.split("_")[0]
+            if initial_currency == instrument_name.split("_")[0]:
+                is_base = True
+                side = 'sell'
+            else:
+                is_base = False
+                side = 'buy'
+
+            min_quantity = float(
+                instruments_dict[instrument_name]['min_quantity'])
+            # Min price for buy order for one token
+            ask_price = float(ticker['a']) * \
+                (1-profit_percentage_per_trade/100)
+            # Max price for sell order for one token
+            bid_price = float(ticker['b']) * \
+                (1 + profit_percentage_per_trade/100)
+
+            initial_currency = order_of_trade.split("_")[0]
+            min_decimals = int(
+                instruments_dict[instrument_name]['quantity_decimals'])
+
+            if side == 'sell':
+                price = bid_price
+                if available_quantity >= min_quantity:
+                    available_quantity = (
+                        available_quantity / ask_price) * (1 - TRADING_FEE_PERCENTAGE/100)
+                    quantity_value = available_quantity * ask_price
+                    print(
+                        f"Sell {available_quantity} {base} for {quantity_value} {quote}")
+                    # available_quantity = math.floor(
+                    #     available_quantity * 10**min_decimals) / 10**min_decimals
+                    checks.append([side, True])
+                else:
+                    checks.append([side, False])
+                    # return checks, available_quantities
+            else:
+                price = ask_price
+                future_tokens_quantity = (
+                    available_quantity / bid_price) * (1 - TRADING_FEE_PERCENTAGE/100)
+                future_tokens_quantity = future_tokens_quantity
+                # rounded_future_tokens_quantity = math.floor(
+                #     future_tokens_quantity * 10**min_decimals) / 10**min_decimals
+                if future_tokens_quantity >= min_quantity:
+                    checks.append([side, True])
+                    available_quantity = future_tokens_quantity
+                    quantity_value = available_quantity * bid_price
+                    print(
+                        f"Buy {available_quantity} {quote} for {available_quantity} {base}")
+                else:
+                    checks.append([side, False])
+                    # return checks, available_quantities
+
+            available_quantities.append(available_quantity)
+            future_values.append(quantity_value)
+            trade = {
+                "instrument_name": instrument_name,
+                "side": side,
+                "price": price,
+                "quantity": available_quantity
+            }
+            sequence.add_trade_infos(trade)
+
+        has_false = any(False in sublist for sublist in checks)
+        if not has_false:
+            # TODO : make it work for any currencies instead of USDT -> ... -> USDT
+            print("Instruments", sequence.instrument_names)
+            print("Traders", sequence.order_of_trades)
+            print("Checks", checks)
+            print("Available quantities", available_quantities)
+            print("Future values", future_values)
+            input()
+            sequence.percentage_return = calculate_percentage_return(
+                available_quantities[0], available_quantities[-1])
+            sequence.checks = checks
+            sequence.available_quantities = available_quantities
+            kept_sequences.append(sequence)
+            # print(sequence.percentage_return)
+
+    return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
+
+
+def get_trading_sequences(start_currencies: list[str], end_currencies: list[str]) -> list[SingleTradeSequence]:
+    # Monitor market data
+    ticker = get_ticker()
+
+    # Get all usable instruments with spread > MIN_SPREAD_PERCENTAGE
+    instrument_names = get_usable_instruments(
+        ticker, MIN_SPREAD_PERCENTAGE)
+
+    # print(f"Getting possible trading sequences with start currency {START_CURRENCIES} and end currencies {END_CURRENCIES} and max depth of {MAX_DEPTH} ...")
+    possible_trading_sequences = generate_possible_trading_sequences(
+        instrument_names, start_currencies, end_currencies, MAX_DEPTH)
+    # print("Generating readable instrument pairs for each sequence")
+    possible_instrument_pairs = generate_readable_instrument_pairs(
+        possible_trading_sequences)
+
+    # print("Creating trading sequences...")
+    ts_l = create_trading_sequences(
+        possible_instrument_pairs, instrument_names)
+    ts_l.update_trade_sequences_tickers()
+    # print("Final trade sequences possible", len(ts_l.trade_sequences))
+
+    # ordered_sequences = ts_l.order_trade_sequences_by_return()
+    return ts_l.get_trade_sequences()

@@ -17,18 +17,23 @@ api_config = config['api']
 telegram_config = config['telegram']
 
 
+# Trader configuration
 TRADING_FEE_PERCENTAGE = 0.0750 # % 
 DESIRED_PROFIT_PERCENTAGE = 1 # %
+END_CURRENCIES = ["USDT"]
+MIN_SPREAD_PERCENTAGE = 0.0
+MIN_PROFITS_PERCENTAGE = 0.01  # TODO : integrate it
+MAX_DEPTH = 3
 
 
-
-
+# CDC API configuration
 REST_BASE = api_config['rest_api'][ENV]
 WS_MARKET = api_config['websocket_api'][ENV]['market_data']
 WS_USER = api_config['websocket_api'][ENV]['user_data']
 API_KEY = api_config['key']
 API_SECRET = api_config['secret_key']
 
+# Telegram configuration
 TEL_API_ID = telegram_config['app_api_id']
 TEL_API_HASH = telegram_config['app_api_hash']
 TEL_OWNER_USERNAME = telegram_config['owner_username']

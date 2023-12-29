@@ -1,0 +1,18 @@
+# Method	Limit
+# public/get-book
+# public/get-ticker
+# public/get-trades	100 requests per second each
+
+# Method	Limit
+# private/create-order
+# private/cancel-order
+# private/cancel-all-orders	15 requests per 100ms each
+# private/get-order-detail	30 requests per 100ms
+# private/get-trades	1 requests per second
+# private/get-order-history	1 requests per second
+# All others	3 requests per 100ms each
+# Add other necessary imports and functions here
+# trading method : crypto-to-crypto arbitrage
+
+# Terminology :
+# instrument : a tradable asset that can be bought or sold
