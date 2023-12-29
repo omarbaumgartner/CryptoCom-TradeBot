@@ -17,8 +17,8 @@ api_config = config['api']
 telegram_config = config['telegram']
 
 
-TRADING_FEE_PERCENTAGE = 0.0750
-DESIRED_PROFIT_PERCENTAGE = 1
+TRADING_FEE_PERCENTAGE = 0.0750 # % 
+DESIRED_PROFIT_PERCENTAGE = 1 # %
 
 
 

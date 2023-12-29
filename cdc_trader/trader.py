@@ -26,36 +26,32 @@ import math
 
 END_CURRENCIES = ["USDT"]
 MIN_SPREAD_PERCENTAGE = 0.0
-MIN_PROFITS_PERCENTAGE = 0.1  # TODO : integrate it
-MAX_DEPTH = 4
+MIN_PROFITS_PERCENTAGE = 0.01  # TODO : integrate it
+MAX_DEPTH = 3
 
 user = UserAccounts()
 user.update_accounts()
 user.display_accounts()
 
-# input()
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
-# TODO : Adapt ask and bid price to profit percentage !!!!!!!
+# TODO : Take into account in quantity_available that we deduct the fee
+
 def calculate_percentage_return(initial_quantity, final_quantity):
     return (final_quantity - initial_quantity) / abs(initial_quantity) * 100
 
 
-def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, instruments_dict):
-
+def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, instruments_dict) -> list[SingleTradeSequence]:
     kept_sequences = []
-
     for sequence in sequences:
+        # Getting number of trades
         num_trades = len(sequence.instrument_names)
-        # print(MIN_PROFITS_PERCENTAGE ** (
-        #     1/num_trades))
-        # input()
-        profit_percentage_per_trade = (MIN_PROFITS_PERCENTAGE ** (
-            1/num_trades) + TRADING_FEE_PERCENTAGE) / 100
-        print("Profit percentage per trade", (MIN_PROFITS_PERCENTAGE ** (
-            1/num_trades) + TRADING_FEE_PERCENTAGE))
+        # Calculating profit percentage per trade
+        profit_percentage_per_trade = (MIN_PROFITS_PERCENTAGE ** (1/num_trades) + TRADING_FEE_PERCENTAGE)
         available_quantities = []
+        
         # check if base or quote
         initial_currency = sequence.order_of_trades[0].split("_")[0]
+        
         available_quantity = accounts[initial_currency]['available']
         available_quantities.append(available_quantity)
         min_quantity = float(
@@ -65,14 +61,9 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                                             ]['quantity_decimals'])
 
         # Min price for buy order for one token
-        ask_price = float(sequence.tickers[0]['a']) - (
-            float(sequence.tickers[0]['a']) * profit_percentage_per_trade)
+        ask_price = float(sequence.tickers[0]['a']) * (1 - profit_percentage_per_trade/100)
         # Max price for sell order for one token
-        # print("bid price original", float(sequence.tickers[0]['b']))
-        bid_price = float(sequence.tickers[0]['b']) + (
-            float(sequence.tickers[0]['b']) * profit_percentage_per_trade)
-        # print("bid price adapted", bid_price)
-        # input()
+        bid_price = float(sequence.tickers[0]['b']) * (1 + profit_percentage_per_trade/100)       
         checks = []
         if initial_currency == sequence.instrument_names[0].split("_")[0]:
             is_base = True
@@ -82,10 +73,11 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         # BASE CURRENCY (CRYPTO)
         if is_base:
             side = 'sell'
+            price = bid_price
             # If we have enough quantity
             if available_quantity >= min_quantity:
                 # We convert it to quote currency
-                available_quantity = available_quantity / ask_price
+                available_quantity = (available_quantity / ask_price) * (1 - TRADING_FEE_PERCENTAGE/100 )
                 # available_quantity = math.floor(
                 #     available_quantity * 10**min_decimals) / 10**min_decimals
                 checks.append([side, True])
@@ -95,7 +87,8 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         # QUOTE CURRENCY (FIAT/STABLECOIN or CRYPTO)
         else:
             side = 'buy'
-            future_tokens_quantity = available_quantity * bid_price
+            price = ask_price
+            future_tokens_quantity = (available_quantity / bid_price) * (1 - TRADING_FEE_PERCENTAGE/100 )
             rounded_future_tokens_quantity = future_tokens_quantity
             # rounded_future_tokens_quantity = math.floor(
             #     future_tokens_quantity * 10**min_decimals) / 10**min_decimals
@@ -107,6 +100,17 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 # return checks, available_quantities
 
         available_quantities.append(available_quantity)
+
+        # if side == 'sell':
+        #     quantity = 
+        trade = {
+            "instrument_name" : sequence.instrument_names[0],
+            "side" : side,
+            "price" : price,
+            "quantity" : available_quantity
+        }
+        sequence.add_trade_infos(trade)
+
         # Check rest of the sequence
         for ticker, order_of_trade, instrument_name in zip(sequence.tickers[1:], sequence.order_of_trades[1:], sequence.instrument_names[1:]):
             # invert side
@@ -121,18 +125,18 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
             min_quantity = float(
                 instruments_dict[instrument_name]['min_quantity'])
             # Min price for buy order for one token
-            ask_price = float(
-                ticker['a']) - (float(ticker['a']) * profit_percentage_per_trade)
+            ask_price = float(ticker['a']) * (1-profit_percentage_per_trade/100)
             # Max price for sell order for one token
-            bid_price = float(
-                ticker['b']) + (float(ticker['b']) * profit_percentage_per_trade)
+            bid_price = float(ticker['b']) * (1 + profit_percentage_per_trade/100)       
+
             initial_currency = order_of_trade.split("_")[0]
             min_decimals = int(
                 instruments_dict[instrument_name]['quantity_decimals'])
 
             if side == 'sell':
+                price = bid_price
                 if available_quantity >= min_quantity:
-                    available_quantity = available_quantity / ask_price
+                    available_quantity = (available_quantity / ask_price) * (1 - TRADING_FEE_PERCENTAGE/100 )
                     # available_quantity = math.floor(
                     #     available_quantity * 10**min_decimals) / 10**min_decimals
                     checks.append([side, True])
@@ -140,7 +144,8 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                     checks.append([side, False])
                     # return checks, available_quantities
             else:
-                future_tokens_quantity = available_quantity * bid_price
+                price = ask_price
+                future_tokens_quantity = (available_quantity * bid_price) * (1 - TRADING_FEE_PERCENTAGE/100 )
                 rounded_future_tokens_quantity = future_tokens_quantity
                 # rounded_future_tokens_quantity = math.floor(
                 #     future_tokens_quantity * 10**min_decimals) / 10**min_decimals
@@ -150,23 +155,26 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 else:
                     checks.append([side, False])
                     # return checks, available_quantities
-
+            
             available_quantities.append(available_quantity)
+            trade = {
+            "instrument_name" : instrument_name,
+            "side" : side,
+            "price" : price,
+            "quantity" : available_quantity
+            }
+            sequence.add_trade_infos(trade)
 
         has_false = any(False in sublist for sublist in checks)
         if not has_false:
             # TODO : make it work for any currencies instead of USDT -> ... -> USDT
-
-            print('from', available_quantities[0],
-                  'to', available_quantities[-1])
             sequence.percentage_return = calculate_percentage_return(
                 available_quantities[0], available_quantities[-1])
-            print("Percentage return", sequence.percentage_return)
-            input()
             sequence.checks = checks
             sequence.available_quantities = available_quantities
             kept_sequences.append(sequence)
-            # kept_checks.append(checks)
+            # print(sequence.percentage_return)
+
     return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
 
 
@@ -208,52 +216,46 @@ async def main():
                 )
                 top_sequences = filter_and_order_by_return(
                     sequences, user.accounts, user.instruments_dict)
-                # Need min_quantity for each instrument
-                # accounts=user.accounts,
-                # Need to check if available balance > min_quantity
-                # instruments_dict=user.instruments_dict
+                
+                # Check if sequence is possible
                 if len(top_sequences) != 0:
+                    # We take the first sequence as it is the best one
+                    # top_sequence = top_sequences[0]
                     for sequence in top_sequences:
                         # sequence.display_infos()
-                        print("Percentage return", sequence.percentage_return)
-
                         if sequence.percentage_return >= MIN_PROFITS_PERCENTAGE:
                             sequence.display_infos()
+                            print("Percentage return",
+                                  sequence.percentage_return)
+                            print("Profit percentage per trade", (MIN_PROFITS_PERCENTAGE ** (
+                                1/len(sequence.order_of_trades)) + TRADING_FEE_PERCENTAGE))
                             print("Checks", sequence.checks)
                             print("Available quantities",
                                   sequence.available_quantities)
                             print("Percentage return",
                                   sequence.percentage_return)
                             input()
-                    # is_possible,predicted_quantities = check_if_sequence_is_possible(
-                    #     sequence, user.accounts, user.instruments_dict)
-                    # has_false = any(False in sublist for sublist in is_possible)
-                    # if not has_false:
-                    #     sequence.display_infos()
-                    #     print("Is possible", is_possible)
-                    #     print("Predicted quantities",predicted_quantities)
-                    #     input()
-                    #     top_sequence = sequence
-
-                top_sequence = None
+                            top_sequence = sequence
+                            break
+                else:
+                    top_sequence = None
+                
                 if top_sequence:
                     print("Top trade sequence with return of",
-                          top_sequence.compound_return)
-                    # TODO : take into account trading fee in compound calculator
-
+                          top_sequence.percentage_return)
                     selected_sequence = top_sequence
                     await send_telegram_message(
-                        f"Top trade sequence with return of {top_sequence.compound_return}")
+                        f"Top trade sequence with return of {top_sequence.percentage_return}")
                 else:
                     print("No top sequence available")
+            
             # Sequence already selected, jump to next order placement
             else:
                 print("Top sequence already selected, jumping to order placement")
-                selected_sequence.display_infos()
-                instrument, order_type, price = selected_sequence.get_next_order()
-                print("Placing order of type", order_type,
-                      "for instrument", instrument, "at price", price)
-                wait_for_order = True
+                trade = selected_sequence.get_next_trade()
+                print("Trade",selected_sequence.order_position, trade)
+                input()
+                #wait_for_order = True
 
         else:
             print("Waiting for order to be filled")

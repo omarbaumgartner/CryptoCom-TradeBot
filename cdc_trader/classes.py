@@ -44,20 +44,36 @@ class OrdersManager:
 class SingleTradeSequence:
     def __init__(self):
         self.instrument_names = []
-        self.tickers = []
         self.order_of_trades = []
         self.percentage_spreads = []
         self.percentage_return = 0
+
+        # Contain sides
         self.checks = []
+        # Contain quantities
         self.available_quantities = []
-        # self.compound_return = 0
-        self.side = None
+        # Contain 
+        self.tickers = []
+        self.trade_infos = []
         self.orders_ids = []
+        self.order_position = 0
+        self.order_status = None
 
     def add_instrument_name(self, instrument_name):
         # print("Adding instrument name", instrument_name)
         self.instrument_names.append(instrument_name)
         self.tickers.append({})
+
+    def add_trade_infos(self, trade):
+        self.trade_infos.append(trade)
+        
+    def get_next_trade(self):
+        if self.order_position < len(self.trade_infos):
+            trade_to_return = self.trade_infos[self.order_position]
+            self.order_position += 1
+            return trade_to_return
+        else:
+            return None
 
     def get_instruments_names(self):
         return self.instrument_names
@@ -68,27 +84,7 @@ class SingleTradeSequence:
             compound_return *= 1 + (r / 100)  # Convert percentage to decimal
         return (compound_return - 1)*100
 
-    def get_next_order(self):
-        # No orders yet
-        if len(self.orders_ids) == 0:
-            instrument = self.instrument_names[0]
-            if instrument.split('_')[0] == self.order_of_trades[0]:
-                side = 'buy'
-                price = self.tickers[0]['b']
-            else:
-                side = 'sell'
-                price = self.tickers[0]['a']
-
-            return instrument, side, price
-
     def update_tickers(self, ticker):
-
-        # minimum_percentage_increase_decrease = DESIRED_PROFIT_PERCENTAGE + \
-        #         2 * TRADING_FEE_PERCENTAGE
-
-        # self.minimum_percentage_increase_decrease_per_trade = minimum_percentage_increase_decrease ** (
-        #     1/len(self.order_of_trades))
-
         for i in range(len(self.instrument_names)):
             self.tickers[i] = ticker[self.instrument_names[i]]
             self.tickers[i]['a'] = float(self.tickers[i]['a'])
@@ -109,11 +105,12 @@ class SingleTradeSequence:
         print("Order of trades", self.order_of_trades)
         # print("Percentage spreads", self.percentage_spreads)
         # print("Compound return", self.compound_return)
-        print("Side", self.side)
+        print("Side", self.checks)
         print("Orders ids", self.orders_ids)
         if show_tickers:
             print("Tickers", self.tickers)
         print("#####################################")
+
 
 
 class TradeSequences:
