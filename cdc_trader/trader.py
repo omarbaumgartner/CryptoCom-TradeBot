@@ -8,6 +8,7 @@ from calcul import *
 
 
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
+# Integrate GPU for faster calculations
 async def main():
     # Initialize user accounts
     user = UserAccounts()
@@ -58,6 +59,7 @@ async def main():
                 top_sequences = filter_and_order_by_return(
                     sequences, user.accounts, user.instruments_dict)
                 
+                top_sequence = None
                 # Check if sequence is possible
                 if len(top_sequences) != 0:
                     # We take the first sequence as it is the best one
@@ -78,8 +80,7 @@ async def main():
                             input()
                             top_sequence = sequence
                             break
-                else:
-                    top_sequence = None
+                    
                 
                 if top_sequence:
                     print("Top trade sequence with return of",
@@ -94,9 +95,15 @@ async def main():
             else:
                 print("Top sequence already selected, jumping to order placement")
                 trade = selected_sequence.get_next_trade()
+                input('Press enter to make order')
+                # Make order
+                response = create_order(trade)                
+                print(response)
+                input()
+                cancel_all_orders(trade['instrument_name'])
                 print("Trade",selected_sequence.order_position, trade)
                 input()
-                #wait_for_order = True
+                wait_for_order = True
 
         else:
             print("Waiting for order to be filled")

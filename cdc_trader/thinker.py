@@ -167,7 +167,6 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 # Get initial available quantity
                 available_currency_quantity = initial_quantity
 
-            print('instrument_name', instrument_name)
             # Get base and quote of instrument
             base, quote = instrument_name.split("_")
 
@@ -180,6 +179,7 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
 
             # Set side based on initial currency and instrument
             side = 'sell' if initial_currency == base else 'buy'
+            
             ask_price = float(ticker['a'])
             bid_price = float(ticker['b'])
 
@@ -193,7 +193,7 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 price = adjusted_ask_price
                 
                 if base_quantity_to_get >= min_quantity:
-                    print(f"Buy {base_quantity_to_get} {base} for {available_currency_quantity} {quote}")
+                    #print(f"Buy {base_quantity_to_get} {base} for {available_currency_quantity} {quote}")
                     available_currency_quantity = base_quantity_to_get
                 else:
                     dropped_trade = True
@@ -217,13 +217,19 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 adjusted_bid_price = bid_price * (1 + profit_percentage_per_trade/100)
                 
                 quote_quantity_to_get = available_currency_quantity * adjusted_bid_price * (1 - TRADING_FEE_PERCENTAGE/100)
+                
+                # if instrument changes, we need to convert the quantity to the new instrument
+                # if i > 0 :
+                #     if sequence.instrument_names[i-1] != sequence.instrument_names[i] and side == actual_side:
+                #         print("Instrument changed from ", sequence.instrument_names[i-1], "to", sequence.instrument_names[i]) 
 
                 price = bid_price
                 #sell_quantity = available_currency_quantity
                 # We check that we have enough quantity to sell
                 if available_currency_quantity >= min_quantity:
-                    print(f"Sell {available_currency_quantity} {base} for {quote_quantity_to_get} {quote}")
-                    #available_currency_quantity = quote_quantity_to_get
+                    pass
+                    #print(f"Sell {available_currency_quantity} {base} for {quote_quantity_to_get} {quote}")
+
                 else:
                     # We don't have enough quantity to sell, we skip the sequence
                     dropped_trade = True
@@ -236,21 +242,23 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                     "price": price,
                     "quantity": available_currency_quantity
                 }
+                available_currency_quantity = quote_quantity_to_get
+
             sequence.add_trade_infos(trade)
-        
+            
         if not dropped_trade:
             end_currency = sequence.order_of_trades[-1].split("_")[1]
             end_quantity = available_currency_quantity
             # TODO : make it work for any currencies instead of USDT -> ... -> USDT
-            
-            #sequence.percentage_return = calculate_percentage_return()
-            print("Start currency", start_currency, "Quantity", initial_quantity)
-            print("End currency", end_currency, "Quantity", end_quantity)        
-            print("Instruments of sequence", sequence.instrument_names)
-            print("Order of trades of sequence", sequence.order_of_trades)
-            print("Percentage return", sequence.percentage_return)
-            print("Trades",sequence.trade_infos)
-            input()
+            sequence.percentage_return = calculate_percentage_return(initial_quantity,end_quantity)
+
+            # print("Start currency", start_currency, "Quantity", initial_quantity)
+            # print("End currency", end_currency, "Quantity", end_quantity)        
+            # print("Instruments of sequence", sequence.instrument_names)
+            # print("Order of trades of sequence", sequence.order_of_trades)
+            # print("Percentage return", sequence.percentage_return)
+            # print("Trades",sequence.trade_infos)
+            # input()
             kept_sequences.append(sequence)
 
     return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
