@@ -9,7 +9,7 @@ def load_config(config_file):
 
 # Production or Sandbox
 ENV = 'production'
-
+RICH_MODE = False
 commands_queue = []
 
 config = load_config("config.yaml")
@@ -18,6 +18,8 @@ telegram_config = config['telegram']
 
 
 # Trader configuration
+MIN_VALUE_IN_CURRENCY = 2 # USDT
+MAX_INVESTMENT_PER_TRADE = 5 # USDT
 TRADING_FEE_PERCENTAGE = 0.0750 # % 
 DESIRED_PROFIT_PERCENTAGE = 1 # %
 END_CURRENCIES = ["USDT"]
@@ -38,4 +40,5 @@ TEL_API_ID = telegram_config['app_api_id']
 TEL_API_HASH = telegram_config['app_api_hash']
 TEL_OWNER_USERNAME = telegram_config['owner_username']
 TEL_BOT_TOKEN = telegram_config['bot_token']
-TELEGRAM_MESSAGING_DISABLED = True
+TELEGRAM_MESSAGING_DISABLED = False
+

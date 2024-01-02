@@ -3,7 +3,16 @@ from env import REST_BASE, API_KEY
 import time
 from encrypt import generate_api_signature
 import requests
+import uuid
 
+def generate_unique_id():
+    # Generate a UUID (Universally Unique Identifier)
+    unique_id = str(uuid.uuid4())
+    
+    # Extract the first 36 characters to get a 36-character ID
+    unique_id_36_chars = unique_id[:36]
+    
+    return unique_id_36_chars
 
 def generate_nonce():
     return str(int(time.time() * 1000))
@@ -95,8 +104,8 @@ def get_account_summary(currency=None):
     return response.json()['result']['accounts']
 
 
-def create_order(instrument_name, side, type, price=None, quantity=None, notional=None,
-                 client_oid=None, time_in_force=None, exec_inst=None, trigger_price=None):
+def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None, notional=None,
+                  time_in_force='GOOD_TILL_CANCEL', exec_inst='', trigger_price=None):
     """
     Creates a new order on the Exchange.
 
@@ -123,19 +132,28 @@ def create_order(instrument_name, side, type, price=None, quantity=None, notiona
         "method": endpoint,
         "api_key": API_KEY,  # Replace with your API key
         "params": {
+            "client_oid" : generate_unique_id(), #generate a unique id of 36 characters
             "instrument_name": instrument_name,
-            "side": side,
+            "side": side.upper(),
             "type": type,
             "price": price,
             "quantity": quantity,
-            "notional": notional,
-            "client_oid": client_oid,
-            "time_in_force": time_in_force,
             "exec_inst": exec_inst,
-            "trigger_price": trigger_price
         },
         "nonce": nonce
     }
+
+    # TODO : add based on order type condition
+    if trigger_price:
+        params['params']['trigger_price'] = trigger_price
+    
+    if notional:
+        params['params']['notional'] = notional 
+
+    if time_in_force:
+        params['params']['time_in_force'] = time_in_force
+
+
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
     return response.json()
@@ -173,7 +191,7 @@ def get_open_orders(instrument_name=None, page_size=20, page=0):
     return response.json()['result']
 
 
-def get_order_detail(order_id):
+def get_order_detail(order_id:str):
     """
     Retrieves details for a particular order based on its order ID.
 
@@ -382,3 +400,4 @@ def get_trades(instrument_name=None, page_size=20, page=0, start_ts=None, end_ts
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
     return response.json()
+

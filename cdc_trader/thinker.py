@@ -3,6 +3,8 @@ from functions import *
 from env import *
 from classes import *
 from calcul import *
+import math
+from decimal import Decimal, ROUND_CEILING
 
 # Get instruments from ticker that could be used for trading
 
@@ -147,7 +149,6 @@ def has_duplicates_middle(lst):
 
 def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, instruments_dict) -> list[SingleTradeSequence]:
     kept_sequences = []
-
     for sequence in sequences:
         # Getting number of trades
         num_trades = len(sequence.instrument_names)
@@ -157,9 +158,13 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
 
         # check if base or quote
         initial_currency = sequence.order_of_trades[0].split("_")[0]
+
         start_currency = initial_currency
         initial_quantity = accounts[initial_currency]['available']
-        # Check rest of the sequence
+        if initial_quantity > MAX_INVESTMENT_PER_TRADE:
+            initial_quantity = MAX_INVESTMENT_PER_TRADE
+
+        # Loop through each trade
         for (i,(ticker, order_of_trade, instrument_name)) in enumerate(zip(sequence.tickers, sequence.order_of_trades, sequence.instrument_names)):
             dropped_trade = False
             # Check if first order
@@ -167,9 +172,11 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 # Get initial available quantity
                 available_currency_quantity = initial_quantity
 
+            #print('instrument_name', instrument_name)
             # Get base and quote of instrument
             base, quote = instrument_name.split("_")
-
+            price_decimals = instruments_dict[instrument_name]['price_decimals']
+            quantity_decimals = instruments_dict[instrument_name]['quantity_decimals']
             # Get initial currency
             initial_currency = order_of_trade.split("_")[0]
 
@@ -179,7 +186,6 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
 
             # Set side based on initial currency and instrument
             side = 'sell' if initial_currency == base else 'buy'
-            
             ask_price = float(ticker['a'])
             bid_price = float(ticker['b'])
 
@@ -187,9 +193,17 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
             if side == 'buy':
                 # This adjusted ask price is the price you are willing to pay per BTC to achieve a K% profit.
                 adjusted_ask_price = ask_price * (1-profit_percentage_per_trade/100)
+                
+                # Round to the lowest (floor) price_decimals
+                adjusted_ask_price = floor_with_decimals(adjusted_ask_price, price_decimals)
+                
                 # Number of tokens to get after the trade with adjusted ask price
                 base_quantity_to_get = available_currency_quantity / (adjusted_ask_price * (1 - TRADING_FEE_PERCENTAGE/100))
-                                
+
+                # Round to the lowest (floor) quantity_decimals
+                base_quantity_to_get = floor_with_decimals(base_quantity_to_get, quantity_decimals)
+
+
                 price = adjusted_ask_price
                 
                 if base_quantity_to_get >= min_quantity:
@@ -215,26 +229,31 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
             else:
                 # This adjusted bid price is the price you are willing to sell per BTC to achieve a K% profit.
                 adjusted_bid_price = bid_price * (1 + profit_percentage_per_trade/100)
+
+                # Round to the highest (floor) price_decimals
+                adjusted_bid_price = ceil_with_decimals(adjusted_bid_price, price_decimals)
+                
                 
                 quote_quantity_to_get = available_currency_quantity * adjusted_bid_price * (1 - TRADING_FEE_PERCENTAGE/100)
                 
-                # if instrument changes, we need to convert the quantity to the new instrument
-                # if i > 0 :
-                #     if sequence.instrument_names[i-1] != sequence.instrument_names[i] and side == actual_side:
-                #         print("Instrument changed from ", sequence.instrument_names[i-1], "to", sequence.instrument_names[i]) 
+                # Floor with quantity_decimals
+                quote_quantity_to_get = floor_with_decimals(quote_quantity_to_get, quantity_decimals)
 
-                price = bid_price
+                price = adjusted_bid_price
+                
+
+                    
+                            
                 #sell_quantity = available_currency_quantity
                 # We check that we have enough quantity to sell
                 if available_currency_quantity >= min_quantity:
                     pass
                     #print(f"Sell {available_currency_quantity} {base} for {quote_quantity_to_get} {quote}")
-
+                    #available_currency_quantity = quote_quantity_to_get
                 else:
                     # We don't have enough quantity to sell, we skip the sequence
                     dropped_trade = True
                     continue
-
 
                 trade = {
                     "instrument_name": instrument_name,
@@ -243,15 +262,13 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                     "quantity": available_currency_quantity
                 }
                 available_currency_quantity = quote_quantity_to_get
-
             sequence.add_trade_infos(trade)
-            
+        
         if not dropped_trade:
             end_currency = sequence.order_of_trades[-1].split("_")[1]
             end_quantity = available_currency_quantity
             # TODO : make it work for any currencies instead of USDT -> ... -> USDT
-            sequence.percentage_return = calculate_percentage_return(initial_quantity,end_quantity)
-
+            sequence.percentage_return = calculate_percentage_return(initial_quantity, end_quantity)
             # print("Start currency", start_currency, "Quantity", initial_quantity)
             # print("End currency", end_currency, "Quantity", end_quantity)        
             # print("Instruments of sequence", sequence.instrument_names)
@@ -264,10 +281,7 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
     return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
 
 
-def get_trading_sequences(start_currencies: list[str], end_currencies: list[str]) -> list[SingleTradeSequence]:
-    # Monitor market data
-    ticker = get_ticker()
-
+def get_trading_sequences(ticker,start_currencies: list[str], end_currencies: list[str]) -> list[SingleTradeSequence]:
     # Get all usable instruments with spread > MIN_SPREAD_PERCENTAGE
     instrument_names = get_usable_instruments(
         ticker, MIN_SPREAD_PERCENTAGE)

@@ -8,7 +8,6 @@ from calcul import *
 
 
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
-# Integrate GPU for faster calculations
 async def main():
     # Initialize user accounts
     user = UserAccounts()
@@ -25,11 +24,12 @@ async def main():
 
     selected_sequence = None
     wait_for_order = False
+    order_id = ""
     
     # Main loop, monitor market data and place orders
     while True:
         
-        # High frequency monitoring when waiting for order
+        # Frequency monitoring depending on if we're waiting for an order to be filled
         if wait_for_order:
             sleep_time = 0.01
         else:
@@ -47,40 +47,40 @@ async def main():
             # We look for best trading sequence
             if not selected_sequence:
                 # We get the available currencies we can trade
-                available_currencies = user.get_available_currencies()
+                # TODO : Remove too low balance from available currencies
+                
+                ticker = get_ticker()
+                # to dict
+                ticker_dict = {t['i']: t for t in ticker}
+                available_currencies = user.get_available_currencies(ticker_dict, min_value_in_usdt=MIN_VALUE_IN_CURRENCY)
                 print("Available currencies", available_currencies)
+                
                 print("Looking for top sequence...")
 
                 sequences = get_trading_sequences(
+                    ticker,
                     start_currencies=available_currencies,
                     end_currencies=END_CURRENCIES,
                 )
 
                 top_sequences = filter_and_order_by_return(
                     sequences, user.accounts, user.instruments_dict)
-                
                 top_sequence = None
                 # Check if sequence is possible
                 if len(top_sequences) != 0:
                     # We take the first sequence as it is the best one
                     # top_sequence = top_sequences[0]
+                    print("########## TOP SEQUENCES ##########")
                     for sequence in top_sequences:
                         # sequence.display_infos()
                         if sequence.percentage_return >= MIN_PROFITS_PERCENTAGE:
                             sequence.display_infos()
+                            print('Trades',sequence.trade_infos)
                             print("Percentage return",
                                   sequence.percentage_return)
-                            print("Profit percentage per trade", (MIN_PROFITS_PERCENTAGE ** (
-                                1/len(sequence.order_of_trades)) + TRADING_FEE_PERCENTAGE))
-                            print("Checks", sequence.checks)
-                            print("Available quantities",
-                                  sequence.available_quantities)
-                            print("Percentage return",
-                                  sequence.percentage_return)
-                            input()
                             top_sequence = sequence
                             break
-                    
+  
                 
                 if top_sequence:
                     print("Top trade sequence with return of",
@@ -93,20 +93,42 @@ async def main():
             
             # Sequence already selected, jump to next order placement
             else:
-                print("Top sequence already selected, jumping to order placement")
                 trade = selected_sequence.get_next_trade()
-                input('Press enter to make order')
-                # Make order
-                response = create_order(trade)                
-                print(response)
-                input()
-                cancel_all_orders(trade['instrument_name'])
-                print("Trade",selected_sequence.order_position, trade)
-                input()
-                wait_for_order = True
+                if trade == None:
+                    print("No more trades in sequence")
+                    selected_sequence = None
+                    order_id = ""
+
+                print('Creating order with trade',selected_sequence.order_position, trade)
+                await send_telegram_message(
+                    f"Creating order with trade {selected_sequence.order_position} {trade}")
+                
+                # TODO : PYUSDT_USDT TOO STABLE TO TRADE WITH ADJUSTED PRICE, NEED TO ADJUST IT BASED ON MIN MAX OF LAST X TIME, OR USE AVERAGE, ORDER MIGHT NEVER BE FILLED
+                response = create_order(**trade)
+                
+                # TODO : HANDLE ERROR UNOTHOZIED
+                if(response['code'] == 10002):
+                    print('Error creating order',response)
+                    await send_telegram_message(
+                        f"Error creating order {response}")
+                    selected_sequence = None
+                    order_id = ""
+                else:    
+                    print('Response',response)
+                    order = response['result']
+                    order_id = order['order_id']
+                    wait_for_order = True
 
         else:
-            print("Waiting for order to be filled")
+            order_details = get_order_detail(order_id)
+            status = order_details['result']['order_info']['status']
+            if status == 'ACTIVE':
+                print("Waiting for order to be filled",order_details)
+            elif status == 'FILLED': 
+                print("Order filled")
+                await send_telegram_message(
+                    f"Order filled")
+                wait_for_order = False
 
         # Sleep between iterations
         await asyncio.sleep(sleep_time)
