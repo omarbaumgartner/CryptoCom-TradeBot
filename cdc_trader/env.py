@@ -15,7 +15,7 @@ commands_queue = []
 config = load_config("config.yaml")
 api_config = config['api']
 telegram_config = config['telegram']
-
+LOG_FILEPATH = config['system']['log_file']
 
 # Trader configuration
 MIN_VALUE_IN_CURRENCY = 2 # USDT
@@ -24,8 +24,9 @@ TRADING_FEE_PERCENTAGE = 0.0750 # %
 DESIRED_PROFIT_PERCENTAGE = 1 # %
 END_CURRENCIES = ["USDT"]
 MIN_SPREAD_PERCENTAGE = 0.0
-MIN_PROFITS_PERCENTAGE = 0.01  # TODO : integrate it
-MAX_DEPTH = 4
+MIN_PROFITS_PERCENTAGE = 1  # TODO : integrate it
+PAUSE_TRADER = False
+MAX_DEPTH = 3
 
 
 # CDC API configuration

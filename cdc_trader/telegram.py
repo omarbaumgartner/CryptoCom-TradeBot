@@ -1,5 +1,5 @@
 from telethon import events, TelegramClient
-from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED
+from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER
 import asyncio
 from functions import *
 
@@ -29,10 +29,15 @@ async def handle_messages(event):
         print("Shutting down")
         commands_queue.append('stop')
 
+    elif 'pause' or 'unpause' in event.raw_text.lower():
+        PAUSE_TRADER = not PAUSE_TRADER
+        await event.reply(f"Trader paused")
+
         # await bot.disconnect()
     elif 'ping' in event.raw_text.lower():
         commands_queue.append('ping')
         await event.reply("pong")
+
     elif 'account' in event.raw_text.lower():
         account_summary = get_account_summary()
         await event.reply(f"Account Summary: {account_summary}")
@@ -52,7 +57,8 @@ async def handle_messages(event):
             if response['code'] == 0:
                 await event.reply(f"Orders for {instrument_name} canceled")
             else:
-                await event.reply(f"Error canceling orders for {instrument_name}")
+                pass
+                #await event.reply(f"Error canceling orders for {instrument_name}")
 
 
 async def send_telegram_message(message):

@@ -23,10 +23,12 @@ def floor_with_decimals(value:float, num_decimals:int)->float:
     value_decimal = Decimal(str(value))
 
     # Perform the necessary operations
-    value_decimal *= Decimal(precision)
+    value_decimal *= precision
     value_decimal = value_decimal.to_integral_value(rounding=ROUND_FLOOR)
-    value_decimal /= Decimal(precision)
+    value_decimal /= precision
 
     # Convert back to float if needed
     value = float(value_decimal)
     return value
+
+

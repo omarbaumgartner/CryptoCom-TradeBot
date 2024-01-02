@@ -12,6 +12,8 @@ from decimal import Decimal, ROUND_CEILING
 def get_usable_instruments(ticker, min_spread_percentage):
     instruments = {}
     for tick in ticker:
+        # print(tick)
+        # input()
         # Cleaning based on tests
         if '-' not in tick['i'] and 'T_USD' not in tick["i"] and 'PERP' not in tick["i"] and tick["a"] != "0" and tick["b"] != "0" and tick["k"] != "0" and tick["a"] != None and tick["b"] != None and tick["k"] != None:
             # if quote or base is USD
@@ -20,9 +22,18 @@ def get_usable_instruments(ticker, min_spread_percentage):
             else:
                 # if spread is greater than minimum_percentage_increase_decrease
                 if 100*((float(tick["a"]) - float(tick["b"])) / float(tick["b"])) >= min_spread_percentage:
-                    instruments[tick["i"]] = tick["i"]
+                    instruments[tick["i"]] = {
+                        'instrument_name': tick['i'],
+                        'verified_volume' : tick['vv'],
+                        }
 
-    return dict(sorted(instruments.items()))
+    
+    
+    # sort instruments dict by vv attribute inside each instrument
+    instruments = dict(sorted(instruments.items(), key=lambda x: round(float(x[1]['verified_volume']),2), reverse=True))
+    # slice instruments dict to keep only the first num_instruments instruments
+    instruments = dict(list(instruments.items())[:50])
+    return instruments.keys()
 
 # Function to check if 'USD' and 'USDT' appear consecutively TODO : make it work for any number of currencies
 
@@ -103,6 +114,10 @@ def generate_possible_trading_sequences(usable_instruments, start_currencies, en
                 if sequence not in final_queue and len(sequence) > 1 and sequence[-1] in end_currencies and len(sequence) == max_depth:
                     final_queue.append(sequence)
             break
+
+
+    # Sort final queue by liquidity
+        
 
     return final_queue
 
@@ -188,21 +203,28 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
             side = 'sell' if initial_currency == base else 'buy'
             ask_price = float(ticker['a'])
             bid_price = float(ticker['b'])
-
+            # print("Ask price", ask_price)
+            # print("Bid price", bid_price)
+            # print("Side", side)
             # Buying order --> buy quote for base
             if side == 'buy':
                 # This adjusted ask price is the price you are willing to pay per BTC to achieve a K% profit.
                 adjusted_ask_price = ask_price * (1-profit_percentage_per_trade/100)
-                
+                # print("Adjusted ask price", adjusted_ask_price)
+                # print("Price decimals", price_decimals)
                 # Round to the lowest (floor) price_decimals
                 adjusted_ask_price = floor_with_decimals(adjusted_ask_price, price_decimals)
-                
+                # print("Adjusted ask price", adjusted_ask_price)
+                # print("Available currency quantity", available_currency_quantity)
                 # Number of tokens to get after the trade with adjusted ask price
                 base_quantity_to_get = available_currency_quantity / (adjusted_ask_price * (1 - TRADING_FEE_PERCENTAGE/100))
 
                 # Round to the lowest (floor) quantity_decimals
                 base_quantity_to_get = floor_with_decimals(base_quantity_to_get, quantity_decimals)
 
+                # Resets initial quantity after adapting first trade quantity
+                if i == 0:
+                    initial_quantity = base_quantity_to_get * adjusted_ask_price
 
                 price = adjusted_ask_price
                 
@@ -266,7 +288,7 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         
         if not dropped_trade:
             end_currency = sequence.order_of_trades[-1].split("_")[1]
-            end_quantity = available_currency_quantity
+            end_quantity = round(sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] - (sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] * TRADING_FEE_PERCENTAGE/100),2)
             # TODO : make it work for any currencies instead of USDT -> ... -> USDT
             sequence.percentage_return = calculate_percentage_return(initial_quantity, end_quantity)
             # print("Start currency", start_currency, "Quantity", initial_quantity)

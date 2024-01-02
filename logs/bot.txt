@@ -1,0 +1,77 @@
+{'nonce': '1704229728568', 'type': 'log', 'message': 'Starting trader...'}
+{'nonce': '1704232332105', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.3394671829269025'}
+{'nonce': '1704232334925', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.2431141756337234'}
+{'nonce': '1704232336563', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.2225992534781134'}
+{'nonce': '1704232338054', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.201061893960177'}
+{'nonce': '1704232339447', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.201061893960177'}
+{'nonce': '1704232341006', 'type': 'log', 'message': 'Top trade sequence with return of None, RETURN : 2.230406891051034'}
+{'nonce': '1704232405255', 'type': 'log', 'message': 'Top trade sequence with return of : 2.1991282291230836'}
+{'nonce': '1704232406698', 'type': 'log', 'message': 'Top trade sequence with return of : 2.18960118618331'}
+{'nonce': '1704232409741', 'type': 'log', 'message': 'Top trade sequence with return of : 2.196170575460773'}
+{'nonce': '1704232411309', 'type': 'log', 'message': 'Top trade sequence with return of : 2.196170575460773'}
+{'nonce': '1704232413044', 'type': 'log', 'message': 'Top trade sequence with return of : 2.1958585464897116'}
+{'nonce': '1704232475953', 'type': 'log', 'message': 'Top trade sequence with return of : 2.1465274324548345'}
+{'nonce': '1704232555823', 'type': 'log', 'message': 'Top trade sequence with return of : 2.1588086834987434'}
+{'nonce': '1704232713640', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.197956040879194%'}
+{'nonce': '1704232717257', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.197956040879194%'}
+{'nonce': '1704232720119', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.2012578616352285%'}
+{'nonce': '1704232721491', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'SUSHI_USDT', 'side': 'buy', 'price': 1.272, 'quantity': 3.9}"}
+{'nonce': '1704232816251', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.235829432468449%'}
+{'nonce': '1704232817308', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'INJ_USDT', 'side': 'buy', 'price': 36.6799, 'quantity': 0.1}"}
+{'nonce': '1704233004888', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.237035053389101%'}
+{'nonce': '1704233005638', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'MAGIC_USDT', 'side': 'buy', 'price': 1.12706, 'quantity': 4.4}"}
+{'nonce': '1704233191937', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1963915534266936%'}
+{'nonce': '1704233194239', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1963915534266936%'}
+{'nonce': '1704233196660', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1963915534266936%'}
+{'nonce': '1704233342882', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1975975416705316%'}
+{'nonce': '1704233344362', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'SOL_USDT', 'side': 'buy', 'price': 107.39, 'quantity': 0.04}"}
+{'nonce': '1704233493057', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.209018607163475%'}
+{'nonce': '1704233494450', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'SOL_USDT', 'side': 'buy', 'price': 107.378, 'quantity': 0.04}"}
+{'nonce': '1704233511250', 'type': 'log', 'message': "Creating order with trade 2 {'instrument_name': 'SOL_USDT', 'side': 'sell', 'price': 109.711, 'quantity': 0.04}"}
+{'nonce': '1704233548161', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1977660431986115%'}
+{'nonce': '1704233548862', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'PYR_USDT', 'side': 'buy', 'price': 8.1052, 'quantity': 0.6}"}
+{'nonce': '1704233628799', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.196308158367782%'}
+{'nonce': '1704233629541', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'SUI_USDT', 'side': 'buy', 'price': 0.89667, 'quantity': 5.5}"}
+{'nonce': '1704233752108', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1787819050666233%'}
+{'nonce': '1704233789416', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.191393035325288%'}
+{'nonce': '1704234621537', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.180643332542389%'}
+{'nonce': '1704234621672', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234624552', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.188807976589323%'}
+{'nonce': '1704234624685', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234626119', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1500947359749576%'}
+{'nonce': '1704234626279', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234627729', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1500947359749576%'}
+{'nonce': '1704234627885', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234630603', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1421090294629788%'}
+{'nonce': '1704234630735', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234632278', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1421090294629788%'}
+{'nonce': '1704234632419', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234633966', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1396827845000566%'}
+{'nonce': '1704234634124', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234635632', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.2400616734548793%'}
+{'nonce': '1704234635776', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234638199', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1753389428748884%'}
+{'nonce': '1704234638591', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234640126', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1400758651445524%'}
+{'nonce': '1704234640293', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234641848', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1400758651445524%'}
+{'nonce': '1704234641995', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234643381', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1910452931497253%'}
+{'nonce': '1704234643531', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234646283', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.16788226413644%'}
+{'nonce': '1704234646439', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234647756', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1708676097283446%'}
+{'nonce': '1704234647969', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234658833', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.174583590376307%'}
+{'nonce': '1704234692621', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234694104', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1816232736893726%'}
+{'nonce': '1704234715803', 'type': 'log', 'message': 'No more trades in sequence, looking for new sequence'}
+{'nonce': '1704234717146', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1744717186036273%'}
+{'nonce': '1704235242199', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.349186354249305%'}
+{'nonce': '1704235242912', 'type': 'log', 'message': "Creating order with trade 1 {'instrument_name': 'SUI_USDT', 'side': 'buy', 'price': 0.90066, 'quantity': 5.5}"}
+{'nonce': '1704235271336', 'type': 'log', 'message': 'Order 5755600357890012792 canceled'}
+{'nonce': '1704235271934', 'type': 'log', 'message': "Creating order with trade 2 {'instrument_name': 'SUI_USDT', 'side': 'sell', 'price': 0.92309, 'quantity': 5.5}"}
+{'nonce': '1704235384892', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1745407698629498%'}
+{'nonce': '1704235385660', 'type': 'log', 'message': "Error creating order {'id': 11, 'method': 'private/create-order', 'code': 10002, 'message': 'UNAUTHORIZED'}"}
+{'nonce': '1704235405899', 'type': 'log', 'message': 'Beginning trade sequence with return of : 2.1709771998493452%'}
+{'nonce': '1704235406668', 'type': 'log', 'message': "Order created with trade order 1, {'instrument_name': 'BCH_USDT', 'side': 'buy', 'price': 252.93, 'quantity': 0.019}"}
