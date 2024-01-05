@@ -5,3 +5,4 @@ __pycache__/
 bot.session
 bot.session-journal
 config.yaml
+/logs

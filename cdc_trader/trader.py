@@ -17,7 +17,7 @@ async def log_message(file,message,type='log'):
     await send_telegram_message(message)
     file.write(str(log_message) + '\n')
 
-
+import os
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
 async def main():
     with open(LOG_FILEPATH, 'a') as file:
@@ -53,9 +53,9 @@ async def main():
 
             # Frequency monitoring depending on if we're waiting for an order to be filled
             if wait_for_order:
-                sleep_time = 0.01
-            else:
                 sleep_time = 0.1
+            else:
+                sleep_time = 0.01
 
             # Consume commands sent by telegrams through a command queue
             if len(commands_queue) > 0:
@@ -133,6 +133,7 @@ async def main():
                         else:    
                             print('Response',response)
                             await log_message(file,f"Order created with trade order {selected_sequence.order_position}, {trade}")
+                            print(response)
                             order = response['result']
                             order_id = order['order_id']
                             wait_for_order = True
