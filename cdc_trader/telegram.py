@@ -3,10 +3,11 @@ from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TE
 import asyncio
 from functions import *
 
-client = TelegramClient('bot', TEL_API_ID, TEL_API_HASH).start(bot_token=TEL_BOT_TOKEN)
+client = TelegramClient('bot', TEL_API_ID, TEL_API_HASH)
 
 
 async def initialize_telegram():
+    await client.start()
     print("Launching Bot")
     await send_telegram_message("Bot started")
 

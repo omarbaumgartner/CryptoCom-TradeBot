@@ -100,11 +100,7 @@ def get_account_summary(currency=None):
     }
 
     headers = generate_headers(params)
-    try:
-        response = requests.post(url, json=params, headers=headers)
-        print(response.json())        
-    except Exception as e:
-        print(response.json())
+    response = requests.post(url, json=params, headers=headers)
     return response.json()['result']['accounts']
 
 
