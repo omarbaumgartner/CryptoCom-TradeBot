@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 
-
 class CryptoGraph:
     def __init__(self):
         self.graph = {}
@@ -35,29 +34,22 @@ def find_sequences(CryptoGraph, instrument_names, currency_names):
 
 # Find conversion sequences
     conversion_sequences = []
-# Cross currencies
+    # Cross currencies
     for currency1 in currency_names:
         for currency2 in currency_names:
             if currency1 != currency2:
                 conversion_sequence = crypto_graph.find_conversion_sequence(
                     currency1, currency2)
                 if conversion_sequence:
-                    # print(f"Conversion Sequence from {currency1} to {currency2}: {conversion_sequence}")
                     conversion_sequences.append(conversion_sequence)
-                # input()
                 else:
                     pass
     return conversion_sequences
 
-# conversion_sequences = find_sequences(CryptoGraph, instrument_names, currency_names)
-# print(conversion_sequences)
-
-
 # Create a directed graph
 def directed_graph(conversion_sequences):
     G = nx.DiGraph()
-
-# Add edges based on cryptocurrency pairs
+    # Add edges based on cryptocurrency pairs
     for pair in conversion_sequences:
         for i in range(len(pair) - 1):
             source, target = pair[i], pair[i + 1]
@@ -66,8 +58,8 @@ def directed_graph(conversion_sequences):
             else:
                 G.add_edge(source, target, weight=1)
 
-# Draw the graph
-    pos = nx.spring_layout(G)  # You can choose different layout algorithms
+    # Draw the graph
+    pos = nx.spring_layout(G)
     edge_labels = nx.get_edge_attributes(G, 'weight')
     nx.draw(G, pos, with_labels=True, node_size=700,
             node_color='skyblue', font_size=8)
@@ -75,5 +67,3 @@ def directed_graph(conversion_sequences):
         G, pos, edge_labels=edge_labels, font_color='red')
 
     plt.show()
-
-# directed_graph(conversion_sequences)
