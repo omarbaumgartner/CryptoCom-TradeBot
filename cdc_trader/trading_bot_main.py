@@ -1,11 +1,12 @@
 import asyncio
-from functions import *
-from env import *
-from telegram import send_telegram_message, initialize_telegram
-from thinker import *
-from classes import *
-from calcul import *
+from trading_api_client import *
+from trading_config_loader import *
+from telegram_notifier import send_telegram_message, initialize_telegram
+from trading_sequence_generator import *
+from trading_classes import *
+from financial_calculations import *
 from pathlib import Path
+
 
 async def log_message(file,message,type='log'):
     print(message)
@@ -105,6 +106,7 @@ async def main():
                         await log_message(file,
                             f"Beginning trade sequence with return of : {top_sequence.percentage_return}%")
                         print(top_sequence.trade_infos)
+                        input()
                     else:
                         print("No top sequence available")
                 

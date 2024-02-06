@@ -1,7 +1,7 @@
 from telethon import events, TelegramClient
-from env import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER,TEL_BOT_TOKEN
+from trading_config_loader import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER,TEL_BOT_TOKEN
 import asyncio
-from functions import *
+from trading_api_client import *
 
 client = TelegramClient('bot', TEL_API_ID, TEL_API_HASH)
 

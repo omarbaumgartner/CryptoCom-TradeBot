@@ -19,3 +19,7 @@ telegram:
   app_api_id: "none"
   app_api_hash: "none"
   owner_username: "none"
+
+system:
+  log_level: INFO #TODO: integrate
+  log_file: "logs/bot.txt"

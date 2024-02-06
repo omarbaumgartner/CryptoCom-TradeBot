@@ -1,7 +1,7 @@
 
-from env import REST_BASE, API_KEY
+from trading_config_loader import REST_BASE, API_KEY
 import time
-from encrypt import generate_api_signature
+from api_signature_generator import generate_api_signature
 import requests
 import uuid
 

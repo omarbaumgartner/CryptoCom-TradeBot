@@ -1,14 +1,11 @@
 import copy
-from functions import *
-from env import *
-from classes import *
-from calcul import *
-import math
+from trading_api_client import *
+from trading_config_loader import *
+from trading_classes import *
+from financial_calculations import *
 from decimal import Decimal, ROUND_CEILING
 
 # Get instruments from ticker that could be used for trading
-
-
 def get_usable_instruments(ticker, min_spread_percentage):
     instruments = {}
     for tick in ticker:
