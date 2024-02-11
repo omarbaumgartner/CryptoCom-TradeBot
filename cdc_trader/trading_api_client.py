@@ -57,7 +57,7 @@ def get_instruments():
     return instruments, instruments_names, instruments_dict
 
 
-def get_orderbook(instrument_name, depth=10):
+def get_orderbook(instrument_name, depth=10)->dict:
     '''Get orderbook for an instrument
     depth: Up to 50
     '''
@@ -66,7 +66,7 @@ def get_orderbook(instrument_name, depth=10):
     return response.json()['result']
 
 
-def get_candlesticks(instrument_name, interval):
+def get_candlesticks(instrument_name, interval)->dict:
     # 1m, 5m, 15m, 30m, 1h, 4h, 6h, 12h, 1D,7D, 14D, 1M
     # REST get candlesticks
     response = requests.get(REST_BASE + 'public/get-candlestick',
@@ -75,7 +75,7 @@ def get_candlesticks(instrument_name, interval):
 
 
 # 24h
-def get_ticker(instrument_name=None):
+def get_ticker(instrument_name=None)->dict:
     if instrument_name is None:
         params = {}
     else:
@@ -86,7 +86,7 @@ def get_ticker(instrument_name=None):
     return response.json()['result']['data']
 
 
-def get_account_summary(currency=None):
+def get_account_summary(currency=None)->dict:
     endpoint = 'private/get-account-summary'
     url = REST_BASE + endpoint
 
@@ -105,7 +105,7 @@ def get_account_summary(currency=None):
 
 
 def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None, notional=None,
-                  time_in_force='GOOD_TILL_CANCEL', exec_inst='', trigger_price=None):
+                  time_in_force='GOOD_TILL_CANCEL', exec_inst='', trigger_price=None)->dict:
     """
     Creates a new order on the Exchange.
 
@@ -130,7 +130,7 @@ def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None,
     params = {
         "id": 11,
         "method": endpoint,
-        "api_key": API_KEY,  # Replace with your API key
+        "api_key": API_KEY, 
         "params": {
             "client_oid" : generate_unique_id(), #generate a unique id of 36 characters
             "instrument_name": instrument_name,

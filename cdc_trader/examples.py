@@ -1,4 +1,4 @@
-from cdc_trader.trading_api_client import *
+from trading_api_client import *
 
 # Method	Limit
 # public/get-book
@@ -24,10 +24,23 @@ order_params = {
     "quantity": 10,
     "client_oid": "my_order_0002",
     "time_in_force": "GOOD_TILL_CANCEL",
-    "exec_inst": "POST_ONLY"
+    "exec_inst": "POST_ONLY",
 }
 
-# created_order = create_order(**order_params)
+trade = {
+    "instrument_name": "BTC_USDT",
+    "side": "buy",
+    "type": "LIMIT",
+    "price": 46628.28,
+    "quantity": 0.0001,
+    "time_in_force": "GOOD_TILL_CANCEL",
+    "exec_inst": "POST_ONLY",
+}
+
+created_order = create_order(**trade)
+print('Order:', created_order)
+exit()
+
 # if created_order['code'] == 10004:
 #     print(f"ERROR {created_order['detail_message']}")
 # else:
@@ -42,7 +55,7 @@ stop_limit_params = {
     "trigger_price": 9000,
     "price": 9100,
     "client_oid": "my_stop_limit_order_0015",
-    "time_in_force": "GOOD_TILL_CANCEL"
+    "time_in_force": "GOOD_TILL_CANCEL",
 }
 # created_stop_limit_order = create_order(**stop_limit_params)
 # print('Created Stop-Limit Order:', created_stop_limit_order)
@@ -65,7 +78,7 @@ order_list_to_create = [
         "quantity": 10,
         "client_oid": "my_order_0002",
         "time_in_force": "GOOD_TILL_CANCEL",
-        "exec_inst": "POST_ONLY"
+        "exec_inst": "POST_ONLY",
     },
     {
         "instrument_name": "IOTX_USD",
@@ -75,10 +88,9 @@ order_list_to_create = [
         "quantity": 10,
         "client_oid": "my_order_0003",
         "time_in_force": "GOOD_TILL_CANCEL",
-        "exec_inst": "POST_ONLY"
-    }
+        "exec_inst": "POST_ONLY",
+    },
 ]
-
 
 
 # created_order_list = create_order_list(order_list_to_create)
@@ -91,7 +103,7 @@ order_list_to_create = [
 
 # # Example to get open orders for all instruments
 all_open_orders_data = get_open_orders()
-print('All Open Orders:')
+print("All Open Orders:")
 
 # Example to cancel a list of orders
 # order_list_to_cancel = []

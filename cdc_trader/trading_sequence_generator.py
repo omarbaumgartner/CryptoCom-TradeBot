@@ -57,10 +57,11 @@ def generate_possible_trading_sequences(usable_instruments, start_currencies, en
 
     while stop_loop == False:
         num_parents = len(sequences_queue)
+        
         for sequence in copy.deepcopy(sequences_queue):
             # depth still not reached, we add childs to sequence
-            if len(sequence) < max_depth:
-                # if it loops before reaching depth, we remove it
+            if len(sequence) < max_depth: # +1 because we need to add the end currency
+                # if it the trade loops before reaching depth, we remove it
                 if len(sequence) > len(set(sequence)):
                     sequences_queue.remove(sequence)
                     continue
@@ -112,10 +113,6 @@ def generate_possible_trading_sequences(usable_instruments, start_currencies, en
                     final_queue.append(sequence)
             break
 
-
-    # Sort final queue by liquidity
-        
-
     return final_queue
 
 # Generate readable instrument pairs in order to create trade orders
@@ -162,8 +159,10 @@ def has_duplicates_middle(lst):
 def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, instruments_dict) -> list[SingleTradeSequence]:
     kept_sequences = []
     for sequence in sequences:
+        
         # Getting number of trades
         num_trades = len(sequence.instrument_names)
+        
         # Calculating profit percentage per trade
         profit_percentage_per_trade = (
             MIN_PROFITS_PERCENTAGE ** (1/num_trades) + TRADING_FEE_PERCENTAGE)
@@ -305,10 +304,12 @@ def get_trading_sequences(ticker,start_currencies: list[str], end_currencies: li
     instrument_names = get_usable_instruments(
         ticker, MIN_SPREAD_PERCENTAGE)
 
-    # print(f"Getting possible trading sequences with start currency {START_CURRENCIES} and end currencies {END_CURRENCIES} and max depth of {MAX_DEPTH} ...")
+    
+    # Getting possible trading sequences with start currency start_currencies and end currencies end_currencies
     possible_trading_sequences = generate_possible_trading_sequences(
         instrument_names, start_currencies, end_currencies, MAX_DEPTH)
-    # print("Generating readable instrument pairs for each sequence")
+
+    # Getting readable instrument pairs for each sequence
     possible_instrument_pairs = generate_readable_instrument_pairs(
         possible_trading_sequences)
 

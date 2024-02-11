@@ -21,19 +21,28 @@ async def log_message(file,message,type='log'):
 
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
 async def main():
+    global PAUSE_TRADER
     with open(LOG_FILEPATH, 'a') as file:
+
+        # Initialize bot and authentication
+        print("Initializing telegram...")
+        await initialize_telegram()
+
         # Create log file and directory if not existing
         Path(LOG_FILEPATH).parent.mkdir(parents=True, exist_ok=True)
         Path(LOG_FILEPATH).touch()
 
+        open_orders = get_open_orders()
+        for order in open_orders['order_list']:
+            cancel_order(order['instrument_name'],order['order_id'])
+            await log_message(file,f"Canceling order {order['order_id']} with instrument {order['instrument_name']}")
+        
         # Initialize user accounts
         user = UserAccounts()
         user.update_accounts()
         user.display_accounts()
 
-        # Initialize bot and authentication
-        print("Initializing telegram...")
-        await initialize_telegram()
+
 
         #await log_message(file,"Starting trader...")
 
@@ -46,10 +55,25 @@ async def main():
 
         # Main loop, monitor market data and place orders
         while True:
-            
+            # Consume commands sent by telegrams through a command queue
+            if len(commands_queue) > 0:
+                for command in commands_queue:
+                    if command == 'stop':
+                        # stop all async tasks
+                        asyncio.get_event_loop().stop()
+                    elif command == 'pause':
+                        PAUSE_TRADER = True
+
+                    elif command == 'resume':
+                        PAUSE_TRADER = False
+                        await log_message(file,f"Trader resumed")
+                    
+                    commands_queue.remove(command)
+
+                
             if PAUSE_TRADER:
-                await log_message(file,"Trader paused with interval of 60 seconds")
-                await asyncio.sleep(3)
+                await log_message(file,f"Trader paused with interval of {SLEEP_INTERVAL} seconds")
+                await asyncio.sleep(SLEEP_INTERVAL)
                 continue
 
             # Frequency monitoring depending on if we're waiting for an order to be filled
@@ -58,11 +82,9 @@ async def main():
             else:
                 sleep_time = 0.1
 
-            # Consume commands sent by telegrams through a command queue
-            if len(commands_queue) > 0:
-                for command in commands_queue:
-                    if command == 'stop':
-                        return
+
+
+                        
 
             # We're not waiting for an order to be filled, we can look for new trading sequences
             if not wait_for_order:
@@ -85,9 +107,11 @@ async def main():
                         end_currencies=END_CURRENCIES,
                     )
 
+                    # Filter and order sequences by return
                     top_sequences = filter_and_order_by_return(
                         sequences, user.accounts, user.instruments_dict)
                     top_sequence = None
+
                     # Check if sequence is possible
                     if len(top_sequences) != 0:
                         # We take the first sequence as it is the best one
@@ -106,7 +130,6 @@ async def main():
                         await log_message(file,
                             f"Beginning trade sequence with return of : {top_sequence.percentage_return}%")
                         print(top_sequence.trade_infos)
-                        input()
                     else:
                         print("No top sequence available")
                 
@@ -118,8 +141,8 @@ async def main():
                         await log_message(file,"No more trades in sequence, looking for new sequence")
                         selected_sequence = None
                         order_id = ""
-
                     else:
+                        print(f"Trade {trade}")
                         # TODO : PYUSDT_USDT TOO STABLE TO TRADE WITH ADJUSTED PRICE, NEED TO ADJUST IT BASED ON MIN MAX OF LAST X TIME, OR USE AVERAGE, ORDER MIGHT NEVER BE FILLED
                         response = create_order(**trade)
                         

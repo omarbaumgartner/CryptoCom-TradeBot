@@ -1,5 +1,5 @@
 from telethon import events, TelegramClient
-from trading_config_loader import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER,TEL_BOT_TOKEN
+from trading_config_loader import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER
 import asyncio
 from trading_api_client import *
 
@@ -14,24 +14,35 @@ async def initialize_telegram():
 
 @client.on(events.NewMessage(from_users=[TEL_OWNER_USERNAME]))
 async def handle_messages(event):
+    global PAUSE_TRADER
     # You can add more logic to handle different commands
     if 'help' in event.raw_text.lower():
-        await event.reply("Available commands:\n"
-                          "ping - check if bot is alive\n"
-                          "account - show account summary\n"
-                          "queue - show commands queue\n"
-                          "clear queue - clear commands queue\n"
-                          "cancel all - cancel all orders\n"
-                          "stop - stop the bot")
+        await event.reply(  "Available commands:\n"
+                            "ping - check if bot is alive\n"
+                            "account - show account summary\n"
+                            "orders - show open orders\n"
+                            "queue - show commands queue\n"
+                            "pause - pause the bot\n"
+                            "resume - resume the bot\n"
+                            "clear queue - clear commands queue\n"
+                            "cancel all - cancel all orders\n"
+                            "stop - stop the bot")
+
+
+    elif 'orders' in event.raw_text.lower():
+        open_orders = get_open_orders()
+        await event.reply(f"Open orders: {open_orders}")
 
     elif 'stop' in event.raw_text.lower():
         await event.reply("Shutting down")
-        print("Shutting down")
         commands_queue.append('stop')
 
-    elif 'pause' or 'unpause' in event.raw_text.lower():
-        PAUSE_TRADER = not PAUSE_TRADER
-        await event.reply(f"Trader paused")
+    elif 'pause' in event.raw_text.lower():
+        commands_queue.append('pause')
+        
+
+    elif 'resume' in event.raw_text.lower():
+        commands_queue.append('resume')
 
         # await bot.disconnect()
     elif 'ping' in event.raw_text.lower():
@@ -51,14 +62,10 @@ async def handle_messages(event):
 
     elif 'cancel all' in event.raw_text.lower():
         await event.reply("Canceling all orders")
-        _, instrument_names, _ = get_instruments()
-        for instrument_name in instrument_names:
-            response = cancel_all_orders(instrument_name)
-            if response['code'] == 0:
-                await event.reply(f"Orders for {instrument_name} canceled")
-            else:
-                pass
-                #await event.reply(f"Error canceling orders for {instrument_name}")
+        open_orders = get_open_orders()
+        for order in open_orders['order_list']:
+            cancel_order(order['instrument_name'],order['order_id'])
+            await event.reply(f"Canceling order {order['order_id']} with instrument {order['instrument_name']}")
 
 
 async def send_telegram_message(message):
