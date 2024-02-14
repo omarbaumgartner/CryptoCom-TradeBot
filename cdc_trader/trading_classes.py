@@ -114,8 +114,7 @@ class SingleTradeSequence:
         print("########## TRADE SEQUENCE ##########")
         print("Instrument names", self.instrument_names)
         print("Order of trades", self.order_of_trades)
-        # print("Percentage spreads", self.percentage_spreads)
-        # print("Compound return", self.compound_return)
+        print("Return", self.percentage_return)
         print("Side", self.checks)
         print("Orders ids", self.orders_ids)
         if show_tickers:

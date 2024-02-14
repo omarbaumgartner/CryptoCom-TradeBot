@@ -9,9 +9,8 @@ from decimal import Decimal, ROUND_CEILING
 def get_usable_instruments(ticker, min_spread_percentage):
     instruments = {}
     for tick in ticker:
-        # print(tick)
-        # input()
         # Cleaning based on tests
+        # TODO : Exclude currencies through a list of excluded currencies in config file
         if '-' not in tick['i'] and 'T_USD' not in tick["i"] and 'PERP' not in tick["i"] and tick["a"] != "0" and tick["b"] != "0" and tick["k"] != "0" and tick["a"] != None and tick["b"] != None and tick["k"] != None:
             # if quote or base is USD
             if 'USD' in tick["i"].split('_') or 'EUR' in tick["i"].split('_'):
@@ -33,8 +32,6 @@ def get_usable_instruments(ticker, min_spread_percentage):
     return instruments.keys()
 
 # Function to check if 'USD' and 'USDT' appear consecutively TODO : make it work for any number of currencies
-
-
 def contains_consecutive_usd_usdt(pair):
     for i in range(len(pair) - 1):
         if (pair[i] == 'USD' and pair[i + 1] == 'USDT') or (pair[i] == 'USDT' and pair[i + 1] == 'USD'):
@@ -174,6 +171,8 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         initial_quantity = accounts[initial_currency]['available']
         if initial_quantity > MAX_INVESTMENT_PER_TRADE:
             initial_quantity = MAX_INVESTMENT_PER_TRADE
+        
+
 
         # Loop through each trade
         for (i,(ticker, order_of_trade, instrument_name)) in enumerate(zip(sequence.tickers, sequence.order_of_trades, sequence.instrument_names)):
@@ -285,17 +284,23 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         if not dropped_trade:
             end_currency = sequence.order_of_trades[-1].split("_")[1]
             end_quantity = round(sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] - (sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] * TRADING_FEE_PERCENTAGE/100),2)
-            # TODO : make it work for any currencies instead of USDT -> ... -> USDT
+            # TODO : Convert initial_quantity and end_quantity to USDT by multiplying by the average of the bid and ask prices of the last trade
+            if start_currency != 'USDT':
+                initial_quantity = initial_quantity * float(get_ticker(f"{start_currency}_USDT")[0]['a'])
+            
+            if end_currency != 'USDT':
+                end_quantity = end_quantity * float(get_ticker(f"{end_currency}_USDT")[0]['a'])
+                
             sequence.percentage_return = calculate_percentage_return(initial_quantity, end_quantity)
-            # print("Start currency", start_currency, "Quantity", initial_quantity)
-            # print("End currency", end_currency, "Quantity", end_quantity)        
-            # print("Instruments of sequence", sequence.instrument_names)
-            # print("Order of trades of sequence", sequence.order_of_trades)
-            # print("Percentage return", sequence.percentage_return)
-            # print("Trades",sequence.trade_infos)
-            # input()
+            
+            # Keep only sequences with a return greater than MIN_PROFITS_PERCENTAGE and lower than MAX_DESIRED_PROFIT_PERCENTAGE
+            # if sequence.percentage_return >= MIN_PROFITS_PERCENTAGE and sequence.percentage_return <= MAX_DESIRED_PROFIT_PERCENTAGE:
             kept_sequences.append(sequence)
-
+    tmp = sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
+    for i in tmp:
+        i.display_infos()
+        break
+    input("Press Enter to continue...")            
     return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
 
 
