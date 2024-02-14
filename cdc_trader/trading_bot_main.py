@@ -138,10 +138,8 @@ async def main():
                     else:
                         print(f"Trade {trade}")
                         # TODO : PYUSDT_USDT TOO STABLE TO TRADE WITH ADJUSTED PRICE, NEED TO ADJUST IT BASED ON MIN MAX OF LAST X TIME, OR USE AVERAGE, ORDER MIGHT NEVER BE FILLED
-                        #response = create_order(**trade)
-                        response = {
-                            "code": 20002
-                        }
+                        response = create_order(**trade)
+                        
                         # TODO : HANDLE ERROR UNOTHOZIED
                         if(response['code'] == 10002):
                             await log_message(file,f"Error creating order {response}")
