@@ -27,7 +27,7 @@ This project is a sophisticated cryptocurrency trading bot specifically designed
 ### Installation
 1. Clone the repository:
 ```sh
-   git clone https://github.com/your-username/your-repository.git
+   git clone https://github.com/omarbaumgartner/CryptoCom-TradeBot.git
 ```
 
 2. Navigate to the cloned directory and install dependencies using Poetry:

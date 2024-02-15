@@ -36,6 +36,10 @@ trade = {
     "time_in_force": "GOOD_TILL_CANCEL",
     "exec_inst": "POST_ONLY",
 }
+trade =  {'instrument_name': 'BTC_USDT', 
+          'side': 'buy', 
+          'price': 50179.4, 
+          'quantity': 0.00028}
 
 created_order = create_order(**trade)
 print('Order:', created_order)

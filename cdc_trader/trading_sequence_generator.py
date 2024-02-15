@@ -284,6 +284,7 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
         if not dropped_trade:
             end_currency = sequence.order_of_trades[-1].split("_")[1]
             end_quantity = round(sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] - (sequence.trade_infos[-1]['quantity'] * sequence.trade_infos[-1]['price'] * TRADING_FEE_PERCENTAGE/100),2)
+
             # TODO : Convert initial_quantity and end_quantity to USDT by multiplying by the average of the bid and ask prices of the last trade
             if start_currency != 'USDT':
                 initial_quantity = initial_quantity * float(get_ticker(f"{start_currency}_USDT")[0]['a'])
@@ -292,15 +293,12 @@ def filter_and_order_by_return(sequences: list[SingleTradeSequence], accounts, i
                 end_quantity = end_quantity * float(get_ticker(f"{end_currency}_USDT")[0]['a'])
                 
             sequence.percentage_return = calculate_percentage_return(initial_quantity, end_quantity)
-            
+            # print(f"Initial quantity : {initial_quantity} {start_currency}")
+            # print(f"End quantity : {end_quantity} {end_currency}")
+            # sequence.display_infos()
             # Keep only sequences with a return greater than MIN_PROFITS_PERCENTAGE and lower than MAX_DESIRED_PROFIT_PERCENTAGE
             # if sequence.percentage_return >= MIN_PROFITS_PERCENTAGE and sequence.percentage_return <= MAX_DESIRED_PROFIT_PERCENTAGE:
             kept_sequences.append(sequence)
-    tmp = sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
-    for i in tmp:
-        i.display_infos()
-        break
-    input("Press Enter to continue...")            
     return sorted(kept_sequences, key=lambda x: x.percentage_return, reverse=True)
 
 
