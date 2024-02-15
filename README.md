@@ -3,6 +3,7 @@
 ## Overview
 This project is a sophisticated cryptocurrency trading bot specifically designed for the Crypto.com Exchange platform. It automates trading strategies by interacting with the exchange's APIs and is tailored for both new and experienced traders. The bot's trading logic and Telegram notifier behavior are highly customizable, offering a flexible approach to automated crypto trading.
 
+
 ## Features
 - **Crypto.com Exchange API Integration**: Specifically designed for trading on the Crypto.com Exchange.
 - **Customizable Trading Logic**: Flexible and adaptable trading strategies to suit various trading styles.
@@ -46,7 +47,7 @@ Run the main script to start the bot:
 ```
 
 ## Telegram Commands
-The bot can be controlled remotely via Telegram. Below are the available commands:
+The bot is controlled remotely via Telegram. Users send commands to the Telegram bot, which appends them to a command queue. The bot processes and executes commands in the queue sequentially, allowing users to manage the bot's actions through Telegram.
 
 - `/help`: Displays a list of available commands.
 - `/ping`: Checks if the bot is alive. Responds with "pong".
@@ -56,6 +57,7 @@ The bot can be controlled remotely via Telegram. Below are the available command
 - `/cancel all`: Cancels all open orders on the exchange.
 - `/stop`: Stops the bot.
 - `/pause` or `/unpause`: Toggles the bot's trading activity.
+- `/orders`: Retrieves and displays information about open orders.
 
 ## Disclaimer
 Trading cryptocurrencies involves significant risk and may not be suitable for all investors. Before trading, consider your experience level and risk appetite. This project is not liable for any potential damages or losses.
