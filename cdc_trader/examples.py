@@ -36,11 +36,16 @@ trade = {
     "time_in_force": "GOOD_TILL_CANCEL",
     "exec_inst": "POST_ONLY",
 }
-trade =  {'instrument_name': 'BTC_USDT', 
-          'side': 'buy', 
-          'price': 50179.4, 
-          'quantity': 0.00028}
 
+trade = {'instrument_name': 'BTC_USDT', 
+          'side': 'BUY', 
+          'price': 51593.79, 
+          'quantity': 0.0001}
+
+trade =  {'instrument_name': 'ETH_CRO', 'side': 'BUY', 'price': 30754, 'quantity': 0.0015}
+trade = {'instrument_name': 'CRO_BTC', 'side': 'sell', 'price': 1.7439e-06, 'quantity': 48.6, 'min_quantity': 1.0, 'price_decimals': 10}
+trade = {'instrument_name': 'CRO_BTC', 'side': 'sell', 'price': 0.0000017439, 'quantity': 48.6, 'min_quantity': 1.0, 'price_decimals': 10}
+trade = {'instrument_name': 'ETH_CRO', 'side': 'buy', 'price': 30823.0, 'quantity': 0.0015, 'min_quantity_decimals': 4, 'price_decimals': 0}
 created_order = create_order(**trade)
 print('Order:', created_order)
 exit()

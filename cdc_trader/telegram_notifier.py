@@ -5,7 +5,6 @@ from trading_api_client import *
 
 client = TelegramClient('bot', TEL_API_ID, TEL_API_HASH)
 
-
 async def initialize_telegram():
     await client.start()
     print("Launching Bot")

@@ -23,7 +23,6 @@ def params_to_str(obj, level):
 
 
 def generate_api_signature(req):
-    # First ensure the params are alphabetically sorted by key
     param_str = ""
 
     if "params" in req:
