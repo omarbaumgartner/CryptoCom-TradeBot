@@ -1,51 +1,41 @@
 import asyncio
 from trading_api_client import *
 from trading_config_loader import *
-from telegram_notifier import send_telegram_message, initialize_telegram
+from telegram_notifier import initialize_telegram
 from trading_sequence_generator import *
 from trading_classes import *
 from financial_calculations import *
 from pathlib import Path
-
-async def log_message(file,message,type='log'):
-    print(message)
-    log_message = {
-        "nonce": generate_nonce(),
-        "type": type,
-        "message": message
-    }
-    await send_telegram_message(message)
-    file.write(str(log_message) + '\n')
+from trading_logger import log_message
 
 
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
 async def main():
     global PAUSE_TRADER
     trade = None
+    timer = None
     # Create log file and directory if not existing
     Path(LOG_FILEPATH).parent.mkdir(parents=True, exist_ok=True)
     Path(LOG_FILEPATH).touch()
 
     with open(LOG_FILEPATH, 'a') as file:
 
-        await initialize_telegram()
         # Initialize bot and authentication
         await log_message(file,
-                            f"Initializing telegram...")
+                            f"Initializing telegram...",send_telegram=False)
+        await initialize_telegram()
 
 
+        # Cancel all open orders
+        cancel_all_open_orders()
+        await log_message(file,f"All open orders are cancelled")
 
-        open_orders = get_open_orders()
-        for order in open_orders['order_list']:
-            cancel_order(order['instrument_name'],order['order_id'])
-            await log_message(file,f"Canceling order {order['order_id']} with instrument {order['instrument_name']}")
-        
         # Initialize user accounts
         user = UserAccounts()
         user.update_accounts()
         user.display_accounts()
 
-        #await log_message(file,"Starting trader...")
+        await log_message(file,"Starting trader...")
 
         selected_sequence = None
         wait_for_order = False
@@ -92,7 +82,7 @@ async def main():
                     # to dict
                     ticker_dict = {t['i']: t for t in ticker}
                     available_currencies = user.get_available_currencies(ticker_dict, min_value_in_usdt=MIN_VALUE_IN_CURRENCY)
-
+                    available_currencies.remove('USDT')
 
                     sequences = get_trading_sequences(
                         ticker,
@@ -101,31 +91,39 @@ async def main():
                     )
 
                     # Filter and order sequences by return
-                    top_sequences = filter_and_order_by_return(
+                    top_sequences = filter_and_order_by_profit(
                         sequences, user.accounts, user.instruments_dict)
-                                        
-                    top_sequence = None
+                    
+                    # for sequence in top_sequences:
+                    #     sequence.display_infos()
+                    #     input("Press Enter to continue...")
 
                     # Check if sequence is possible
                     if len(top_sequences) != 0:
                         # We take the first sequence as it is the best one
                         # top_sequence = top_sequences[0]
                         for sequence in top_sequences:
-                            # 
+                            sequence.display_infos()
                             #print(f"Sequence found with return of{sequence.percentage_return}")
                             if sequence.percentage_return >= MIN_PROFITS_PERCENTAGE:                                
-                                sequence.display_infos()
                                 top_sequence = sequence
                                 break
-                            
+         
                     if top_sequence:
                         top_sequence.display_infos()
-                        selected_sequence = top_sequence
+                        selected_sequence = top_sequence                        
                         trade = selected_sequence.get_next_trade()
+                        trade['id'] = selected_sequence.order_position-1
                         await log_message(file,
                             f"Beginning trade sequence with return of : {top_sequence.percentage_return}%")
                     else:
-                        print("No top sequence available")
+                        # if 3 second has passed, we print
+                        if timer == None:
+                            timer = time.time()
+                        
+                        if time.time() - timer > 3:
+                            timer = time.time()
+                            print("No top sequence available")
                 
                 # Sequence already selected, jump to next order placement
                 else:
@@ -136,10 +134,20 @@ async def main():
                         order_id = ""
                         wait_for_order = False
                     else:
+                        
+                        # update available balances
+                        user.update_accounts()
+                        trade['quantity'] = floor_with_decimals(trade['quantity'], trade['min_quantity_decimals'])
+                        if trade['side'] == 'BUY':
+                            trade['price'] = floor_with_decimals(trade['price'], trade['price_decimals'])
+                        else:
+                            trade['price'] = ceil_with_decimals(trade['price'], trade['price_decimals'])
+
                         print(f"Trade {trade}")
+
                         # TODO : PYUSDT_USDT TOO STABLE TO TRADE WITH ADJUSTED PRICE, NEED TO ADJUST IT BASED ON MIN MAX OF LAST X TIME, OR USE AVERAGE, ORDER MIGHT NEVER BE FILLED
                         response = create_order(**trade)
-                        
+
                         # TODO : HANDLE ERROR UNOTHOZIED
                         if(response['code'] == 10002):
                             await log_message(file,f"Error creating order {response}")
@@ -149,8 +157,11 @@ async def main():
                             await log_message(file,f"Order rejected {response}")
                             selected_sequence = None
                             order_id = ""
+                        elif response['code'] == 30014:
+                            await log_message(file,f"INVALID_QUANTITY_PRECISION {response}")
+                            selected_sequence = None
+                            order_id = ""
                         else:    
-                            print('Response',response)
                             await log_message(file,f"Order created with trade order {selected_sequence.order_position}, {trade}")
                             order = response['result']
                             order_id = order['order_id']
@@ -161,7 +172,11 @@ async def main():
             # Waiting for order
             else:
                 order_details = get_order_detail(order_id)
-                status = order_details['result']['order_info']['status']
+                try:
+                    status = order_details['result']['order_info']['status']
+                except:
+                    print("ERROR",order_details)            
+                
                 order_infos = {
                     'order_id':order_id,
                     'status':status,
@@ -173,7 +188,14 @@ async def main():
                     'time_in_force':order_details['result']['order_info']['time_in_force'],
                 }
                 if status == 'ACTIVE':
-                    print(f"Waiting for order {order_id} {order_infos['instrument_name']} {order_infos['side']} {order_infos['quantity']} {order_infos['price']} {order_infos['type']} {order_infos['time_in_force']}")
+                    # if 3 second has passed, we print
+                    if timer == None:
+                        timer = time.time()
+                    
+                    if time.time() - timer > 3:
+                        timer = time.time()
+                        print(f"Waiting for order {order_id} {order_infos['instrument_name']} {order_infos['side']} {order_infos['quantity']} @ {order_infos['price']} | {order_infos['type']} | {order_infos['time_in_force']}")
+                
                 elif status == 'FILLED': 
                     await log_message(file,f"Order {order_id} filled")
                     wait_for_order = False

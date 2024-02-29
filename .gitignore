@@ -7,3 +7,4 @@ bot.session-journal
 config.yaml
 bots/
 logs/
+data/

@@ -67,10 +67,31 @@ def get_orderbook(instrument_name, depth=10)->dict:
 
 
 def get_candlesticks(instrument_name, interval)->dict:
-    # 1m, 5m, 15m, 30m, 1h, 4h, 6h, 12h, 1D,7D, 14D, 1M
-    # REST get candlesticks
+    """
+    Retrieves candlestick data for a specified instrument and interval.
+
+    Args:
+        instrument_name (str): Name of the trading instrument.
+        interval (str): Time interval for the candlesticks.
+                        period can be:
+                        1m : one minute
+                        5m : five minutes
+                        15m : 15 minutes
+                        30m: 30 minutes
+                        1h : one hour
+                        4h : 4 hours
+                        6h : 6 hours
+                        12h : 12 hours
+                        1D : one day
+                        7D : one week
+                        14D : two weeks
+                        1M : one month
+    Returns:
+        dict: Candlestick data for the specified instrument and interval.
+    """
     response = requests.get(REST_BASE + 'public/get-candlestick',
                             params={'instrument_name': instrument_name, 'interval': interval})
+    
     return response.json()['result']
 
 
@@ -105,7 +126,7 @@ def get_account_summary(currency=None)->dict:
 
 
 def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None, notional=None,
-                  time_in_force='GOOD_TILL_CANCEL', exec_inst='', trigger_price=None)->dict:
+                  time_in_force='GOOD_TILL_CANCEL', exec_inst='', trigger_price=None,**kwargs)->dict:
     """
     Creates a new order on the Exchange.
 
@@ -142,7 +163,7 @@ def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None,
         },
         "nonce": nonce
     }
-
+    
     # TODO : add based on order type condition
     if trigger_price:
         params['params']['trigger_price'] = trigger_price
@@ -152,7 +173,6 @@ def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None,
 
     if time_in_force:
         params['params']['time_in_force'] = time_in_force
-
 
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
@@ -188,6 +208,7 @@ def get_open_orders(instrument_name=None, page_size=20, page=0):
 
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
+      
     return response.json()['result']
 
 
@@ -401,3 +422,9 @@ def get_trades(instrument_name=None, page_size=20, page=0, start_ts=None, end_ts
     response = requests.post(url, json=params, headers=headers)
     return response.json()
 
+
+def cancel_all_open_orders():
+    open_orders = get_open_orders()
+    for order in open_orders['order_list']:
+        cancel_order(order['instrument_name'],order['order_id'])
+        print(f"Canceling order {order['order_id']} with instrument {order['instrument_name']}")
