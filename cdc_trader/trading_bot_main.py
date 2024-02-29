@@ -98,8 +98,6 @@ async def main():
                     #     sequence.display_infos()
                     #     input("Press Enter to continue...")
 
-                    top_sequence = None
-
                     # Check if sequence is possible
                     if len(top_sequences) != 0:
                         # We take the first sequence as it is the best one
@@ -113,7 +111,7 @@ async def main():
          
                     if top_sequence:
                         top_sequence.display_infos()
-                        selected_sequence = top_sequence
+                        selected_sequence = top_sequence                        
                         trade = selected_sequence.get_next_trade()
                         trade['id'] = selected_sequence.order_position-1
                         await log_message(file,
@@ -164,7 +162,6 @@ async def main():
                             selected_sequence = None
                             order_id = ""
                         else:    
-                            print('Response',response)
                             await log_message(file,f"Order created with trade order {selected_sequence.order_position}, {trade}")
                             order = response['result']
                             order_id = order['order_id']

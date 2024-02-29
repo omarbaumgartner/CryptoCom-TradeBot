@@ -18,7 +18,9 @@ class UserAccounts:
     def get_available_currencies(self,ticker_dict,min_value_in_usdt=0):
         available_currencies = []
         for currency in self.accounts:
-            if currency != 'USDT' and currency != 'USD' and 'staked' not in currency.lower():
+            if 'staked' in currency.lower():
+                continue
+            if currency != 'USDT' and currency != 'USD':
                 equivalent_usdt = float(self.accounts[currency]['available']) * float(ticker_dict[currency+'_USDT']['a'])
             else:
                 equivalent_usdt = float(self.accounts[currency]['available'])

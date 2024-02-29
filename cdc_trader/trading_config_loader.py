@@ -23,14 +23,13 @@ MIN_VALUE_IN_CURRENCY = 4 # USDT
 MAX_INVESTMENT_PER_TRADE_IN_USDT = 5    # USDT
 TRADING_FEE_PERCENTAGE = 0.0750 # %
 # TODO : Reimplement min/max profit logic
-MIN_PROFITS_PERCENTAGE = 0.09 # The minimum percentage of profit we want to make, will impact the bid and ask prices, the lower the percentage, the more likely the trade will be executed
-MIN_DESIRED_PROFIT_PERCENTAGE = 0.01 # %
-MAX_DESIRED_PROFIT_PERCENTAGE = 1 # %
+MIN_PROFITS_PERCENTAGE = 0.1 # The minimum percentage of profit we want to make, will impact the bid and ask prices, the lower the percentage, the more likely the trade will be executed
 
-END_CURRENCIES = ["USDT"]
-MIN_SPREAD_PERCENTAGE = 0.0
+EXCLUDED_CURRENCIES = ['MANA','WBTC', 'T_USD', 'PERP', 'USDK', 'USDP', 'USDX','USD','EUR','DOGE','CDCETH','PYUSD']
+END_CURRENCIES = ['USDT']
+MAX_SPREAD_PERCENTAGE = 1 # %
 PAUSE_TRADER = False
-MAX_DEPTH = 4
+MAX_TRADES_DEPTH = 2
 
 
 # CDC API configuration

@@ -72,13 +72,26 @@ def get_candlesticks(instrument_name, interval)->dict:
 
     Args:
         instrument_name (str): Name of the trading instrument.
-        interval (str): Time interval for the candlesticks (e.g., '1m', '5m', '1h').
-
+        interval (str): Time interval for the candlesticks.
+                        period can be:
+                        1m : one minute
+                        5m : five minutes
+                        15m : 15 minutes
+                        30m: 30 minutes
+                        1h : one hour
+                        4h : 4 hours
+                        6h : 6 hours
+                        12h : 12 hours
+                        1D : one day
+                        7D : one week
+                        14D : two weeks
+                        1M : one month
     Returns:
         dict: Candlestick data for the specified instrument and interval.
     """
     response = requests.get(REST_BASE + 'public/get-candlestick',
                             params={'instrument_name': instrument_name, 'interval': interval})
+    
     return response.json()['result']
 
 
@@ -150,9 +163,7 @@ def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None,
         },
         "nonce": nonce
     }
-
-    print(params)
-
+    
     # TODO : add based on order type condition
     if trigger_price:
         params['params']['trigger_price'] = trigger_price
@@ -162,7 +173,6 @@ def create_order(instrument_name, side, type='LIMIT', price=None, quantity=None,
 
     if time_in_force:
         params['params']['time_in_force'] = time_in_force
-
 
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
@@ -198,6 +208,7 @@ def get_open_orders(instrument_name=None, page_size=20, page=0):
 
     headers = generate_headers(params)
     response = requests.post(url, json=params, headers=headers)
+      
     return response.json()['result']
 
 

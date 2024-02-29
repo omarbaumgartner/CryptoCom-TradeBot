@@ -14,6 +14,8 @@ numpy = "^1.26.2"
 telethon = "^1.33.1"
 networkx = "^3.2.1"
 matplotlib = "^3.8.2"
+mplfinance = "^0.12.10b0"
+sympy = "^1.12"
 
 
 [build-system]
