@@ -63,7 +63,17 @@ def get_orderbook(instrument_name, depth=10)->dict:
     '''
     response = requests.get(REST_BASE + 'public/get-book',
                             params={'instrument_name': instrument_name, 'depth': depth})
-    return response.json()['result']
+    
+    response.raise_for_status()  # raises exception when not a 2xx response
+    if response.status_code == 200:
+        try:
+            return response.json()['result']
+        except Exception as e:
+                print(e)
+                return None
+         
+    else:    
+        return None
 
 
 def get_candlesticks(instrument_name, interval)->dict:

@@ -43,10 +43,10 @@ class UserAccounts:
             self.add_account(raw_account)
 
     def display_accounts(self):
-        print(f"########## ACCOUNTS SUMMARY ##########")
+        print(f"########## ACCOUNTS SUMMARY ##########",flush=True)
         for currency in self.accounts:
-            print(currency, self.accounts[currency])
-        print(f"######################################")
+            print(currency, self.accounts[currency],flush=True)
+        print(f"######################################",flush=True)
 
 # TODO : integrate
 class OrdersManager:

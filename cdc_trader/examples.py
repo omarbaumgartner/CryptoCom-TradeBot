@@ -37,6 +37,9 @@ trade = {
     "exec_inst": "POST_ONLY",
 }
 
+print(get_ticker('CRO_USDT'))
+exit()
+
 trade = {'instrument_name': 'BTC_USDT', 
           'side': 'BUY', 
           'price': 51593.79, 
