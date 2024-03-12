@@ -1,8 +1,8 @@
 import copy
-from trading_api_client import *
-from trading_config_loader import *
-from trading_classes import *
-from financial_calculations import *
+from cdc_trader.api.cdc_api import *
+from cdc_trader.config.config_loader import *
+from cdc_trader.classes.trade import *
+from cdc_trader.utils.calculation_helpers import *
 from decimal import Decimal, ROUND_CEILING
 
 

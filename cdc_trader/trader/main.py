@@ -1,13 +1,21 @@
 import asyncio
-from trading_api_client import *
-from trading_config_loader import *
-from telegram_notifier import initialize_telegram
-from trading_sequence_generator import *
-from trading_classes import *
-from financial_calculations import *
 from pathlib import Path
-from trading_logger import log_message
-
+import sys
+import os
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Get the absolute path of the grandparent directory
+grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
+# Append the grandparent directory to sys.path
+sys.path.append(grandparent_dir)
+from cdc_trader.config.config_loader import *
+from cdc_trader.api.cdc_api import *
+from cdc_trader.telegram.telegram_bot import initialize_telegram
+from cdc_trader.utils.trading_sequence_generator import *
+from cdc_trader.classes.trade import *
+from cdc_trader.classes.account import *
+from cdc_trader.utils.calculation_helpers import *
+from cdc_trader.utils.trading_logger import log_message
 
 # TODO : OPTIMIZE SPEED BASED ON REQUEST TYPE LIMITS
 async def main():

@@ -1,9 +1,10 @@
 
-from trading_config_loader import REST_BASE, API_KEY
 import time
-from api_signature_generator import generate_api_signature
 import requests
 import uuid
+from cdc_trader.config.config_loader import REST_BASE, API_KEY
+from cdc_trader.utils.api_signature_generator import generate_api_signature
+
 
 def generate_unique_id():
     # Generate a UUID (Universally Unique Identifier)
@@ -63,7 +64,17 @@ def get_orderbook(instrument_name, depth=10)->dict:
     '''
     response = requests.get(REST_BASE + 'public/get-book',
                             params={'instrument_name': instrument_name, 'depth': depth})
-    return response.json()['result']
+    
+    response.raise_for_status()  # raises exception when not a 2xx response
+    if response.status_code == 200:
+        try:
+            return response.json()['result']
+        except Exception as e:
+                print(e)
+                return None
+         
+    else:    
+        return None
 
 
 def get_candlesticks(instrument_name, interval)->dict:

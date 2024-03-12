@@ -1,4 +1,4 @@
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 
 # Method	Limit
 # public/get-book
@@ -36,6 +36,9 @@ trade = {
     "time_in_force": "GOOD_TILL_CANCEL",
     "exec_inst": "POST_ONLY",
 }
+
+print(get_ticker('CRO_USDT'))
+exit()
 
 trade = {'instrument_name': 'BTC_USDT', 
           'side': 'BUY', 

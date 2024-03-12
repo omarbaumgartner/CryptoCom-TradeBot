@@ -1,4 +1,4 @@
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 from datetime import datetime
 import csv
 from pathlib import Path
@@ -37,8 +37,9 @@ ticker = get_ticker()
 
 periods = ["1m", "5m", "15m", "30m", "1h", "4h", "6h", "12h"]
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-instruments = get_usable_instruments(ticker)
 
+#instruments = get_usable_instruments(ticker)
+instruments = ['ARKM_USD']
 for instrument_name in instruments:
     output_folder = f"{data_folder}/{instrument_name}"
     
