@@ -1,10 +1,19 @@
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 import csv
 from pathlib import Path
 import pandas as pd
 import matplotlib.dates as mpdates
-from trading_classes import UserAccounts
-from data_technical_analysis import *
+from classes.trade import UserAccounts
+from utils.technical_analysis import *
+import sys
+import os
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Get the absolute path of the grandparent directory
+grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
+# Append the grandparent directory to sys.path
+sys.path.append(grandparent_dir)
+
 import ta
 from ta.momentum import rsi
 from ta.trend import macd

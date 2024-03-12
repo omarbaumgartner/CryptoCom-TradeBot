@@ -1,4 +1,4 @@
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 from datetime import datetime
 import csv
 from pathlib import Path

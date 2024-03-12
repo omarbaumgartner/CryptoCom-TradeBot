@@ -1,6 +1,6 @@
 import hmac
 import hashlib
-from trading_config_loader import API_SECRET
+from cdc_trader.config.config_loader import API_SECRET
 import json
 
 MAX_LEVEL = 3

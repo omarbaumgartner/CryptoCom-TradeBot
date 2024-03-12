@@ -1,5 +1,5 @@
-from trading_api_client import generate_nonce
-from telegram_notifier import send_telegram_message
+from cdc_trader.api.cdc_api import generate_nonce
+from cdc_trader.telegram.telegram_bot import send_telegram_message
 from datetime import datetime
 # Make the writing in file be directly saved, because atm it only saves when the program stops.
 

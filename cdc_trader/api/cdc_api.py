@@ -1,9 +1,10 @@
 
-from trading_config_loader import REST_BASE, API_KEY
 import time
-from api_signature_generator import generate_api_signature
 import requests
 import uuid
+from cdc_trader.config.config_loader import REST_BASE, API_KEY
+from cdc_trader.utils.api_signature_generator import generate_api_signature
+
 
 def generate_unique_id():
     # Generate a UUID (Universally Unique Identifier)

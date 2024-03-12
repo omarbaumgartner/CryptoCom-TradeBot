@@ -1,10 +1,19 @@
-from trading_api_client import get_orderbook, get_ticker
 import time
 import numpy as np
-from trading_classes import UserAccounts
-from trading_logger import log_message
 import datetime
-from trading_api_client import generate_nonce
+import sys
+import os
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Get the absolute path of the grandparent directory
+grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
+# Append the grandparent directory to sys.path
+sys.path.append(grandparent_dir)
+
+from cdc_trader.classes.account import UserAccounts
+from cdc_trader.utils.trading_logger import log_message
+from cdc_trader.api.cdc_api import generate_nonce
+from cdc_trader.api.cdc_api import get_orderbook, get_ticker
 
 
 def dynamic_threshold_adjustment(bid_order_count_values, ask_order_count_values, window_size=10, sensitivity_factor=1.5):

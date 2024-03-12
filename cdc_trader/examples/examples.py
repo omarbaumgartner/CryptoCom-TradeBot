@@ -1,4 +1,4 @@
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 
 # Method	Limit
 # public/get-book

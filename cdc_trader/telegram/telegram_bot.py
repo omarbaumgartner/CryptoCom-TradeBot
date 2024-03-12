@@ -1,7 +1,7 @@
 from telethon import events, TelegramClient
-from trading_config_loader import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER
+from cdc_trader.config.config_loader import TEL_API_ID, TEL_API_HASH, TEL_OWNER_USERNAME, commands_queue, TELEGRAM_MESSAGING_DISABLED,PAUSE_TRADER
 import asyncio
-from trading_api_client import *
+from cdc_trader.api.cdc_api import *
 
 client = TelegramClient('bot', TEL_API_ID, TEL_API_HASH)
 
