@@ -1,22 +1,17 @@
-from cdc_trader.api.cdc_api import *
+import sys
+import os
 import csv
 from pathlib import Path
 import pandas as pd
 import matplotlib.dates as mpdates
-from classes.trade import UserAccounts
-from utils.technical_analysis import *
-import sys
-import os
 # Get the absolute path of the parent directory
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # Get the absolute path of the grandparent directory
 grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
 # Append the grandparent directory to sys.path
 sys.path.append(grandparent_dir)
-
-import ta
-from ta.momentum import rsi
-from ta.trend import macd
+from cdc_trader.classes.account import UserAccounts
+from cdc_trader.trader.trading_logic import apply_technical_analysis
 
 # Load from csv
 def load_csv(file_path):
@@ -38,30 +33,6 @@ def load_csv_files(folder_path,instruments=None, period='5m'):
                 files.append(file)
     return files
 
-def apply_technical_analysis(df, ma_short_window=10, ma_long_window=50, rsi_window=14, macd_short=12, macd_long=26):
-    # Moving averages
-    df['short_mavg'] = df['close'].rolling(window=ma_short_window, min_periods=1, center=False).mean()
-    df['long_mavg'] = df['close'].rolling(window=ma_long_window, min_periods=1, center=False).mean()
-
-    # RSI
-    df['rsi'] = rsi(df['close'], window=rsi_window)
-
-    # MACD
-    df['macd'] = macd(close=df['close'], window_fast=macd_short, window_slow=macd_long)
-
-    # Combine signals
-    df['combined_signal'] = 0
-    df['combined_signal'] += (df['short_mavg'] > df['long_mavg']).astype(int)
-    df['combined_signal'] += (df['rsi'] < 30).astype(int)
-    df['combined_signal'] += (df['rsi'] > 70).astype(int)
-    df['combined_signal'] += (df['macd'] > 0).astype(int)
-    
-    # Interpret combined signal
-    df['signal'] = 0
-    df.loc[df['combined_signal'] > 1, 'signal'] = 1  # Buy if more than one indicator is positive
-    df.loc[df['combined_signal'] < -1, 'signal'] = -1  # Sell if more than one indicator is negative
-
-    return df
 
 # Selecting period and instruments
 period = "5m"
@@ -76,6 +47,8 @@ data = {
 
 print(f"Period set to {period}")
 print(f"Loading instruments...")
+
+
 for file in filepaths:
     instrument = str(file).split("\\")[1]
     # extracting data
@@ -91,6 +64,7 @@ print(f"{len(data.keys())} instruments loaded")
 user_accounts = UserAccounts()
 user_accounts.update_accounts()
 user_accounts.display_accounts()
+
 # Setting balance to 0 for all currencies except USDT
 for available_currency in user_accounts.accounts:
     if available_currency != 'USDT':
@@ -102,9 +76,6 @@ for instrument in instruments:
     if instrument not in user_accounts.accounts:
         base, quote = instrument.split('_')
         user_accounts.accounts[base] = {'balance': 0, 'balance': 0}
-
-
-
 
 print(f"Beginning balance with {user_accounts.accounts[quote]['balance']} USDT")
 user_accounts.display_accounts()

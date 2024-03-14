@@ -1,5 +1,4 @@
 import time
-import numpy as np
 import datetime
 import sys
 import os
@@ -9,84 +8,11 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
 # Append the grandparent directory to sys.path
 sys.path.append(grandparent_dir)
-
 from cdc_trader.classes.account import UserAccounts
 from cdc_trader.utils.trading_logger import log_message
 from cdc_trader.api.cdc_api import generate_nonce
 from cdc_trader.api.cdc_api import get_orderbook, get_ticker
-
-
-def dynamic_threshold_adjustment(bid_order_count_values, ask_order_count_values, window_size=10, sensitivity_factor=1.5):
-    """
-    Adjust the threshold dynamically based on moving averages of bid and ask order count values.
-
-    Parameters:
-    - bid_order_count_values: List of bid order count values.
-    - ask_order_count_values: List of ask order count values.
-    - window_size: Size of the moving average window.
-    - sensitivity_factor: A factor to control the sensitivity of the adjustment.
-
-    Returns:
-    - Adjusted threshold value.
-    """
-    # Convert bid and ask order count values to numeric type
-    bid_order_count_values = np.array(bid_order_count_values, dtype=float)
-    ask_order_count_values = np.array(ask_order_count_values, dtype=float)
-
-    if len(bid_order_count_values) < window_size or len(ask_order_count_values) < window_size:
-        return 1  # Default threshold if there's not enough data yet
-
-    # Calculate moving averages for bid and ask order counts
-    bid_moving_average = np.mean(bid_order_count_values[-window_size:])
-    ask_moving_average = np.mean(ask_order_count_values[-window_size:])
-
-    # Use the maximum moving average as the basis for adjustment
-    max_moving_average = max(bid_moving_average, ask_moving_average)
-
-    adjusted_threshold = int(max_moving_average * sensitivity_factor)
-
-    return max(1, adjusted_threshold)  # Ensure the threshold is at least 1
-
-
-def trend_following_strategy_with_order_count(
-    order_book_data, available_Base, available_Quote, transaction_fee=0.00075, order_count_threshold=10
-):
-    bids = np.array(order_book_data['bids'])
-    asks = np.array(order_book_data['asks'])
-
-    bid_prices = bids[:, 0].astype(float)
-    ask_prices = asks[:, 0].astype(float)
-
-    bid_volume = bids[:, 1].astype(float)
-    ask_volume = asks[:, 1].astype(float)
-
-    bid_order_count = bids[:, 2].astype(int)
-    ask_order_count = asks[:, 2].astype(int)
-
-    # Calculate the mid-price between the highest bid and lowest ask
-    mid_price = (ask_prices[0] + bid_prices[0]) / 2.0
-
-    # Simulate slippage by adjusting the buy and sell prices
-    adjusted_bid_price = bid_prices[0] * (1 + transaction_fee)
-    adjusted_ask_price = ask_prices[0] * (1 - transaction_fee)
-
-    if mid_price > adjusted_ask_price and bid_order_count[0] > order_count_threshold and available_Quote > 0:
-        # Place a buy order as the mid-price is higher than adjusted ask price and order count is above the threshold
-        print('buy', available_Quote / adjusted_ask_price, float(ask_volume[0]))
-        ask_quantity = min(available_Quote / adjusted_ask_price, float(ask_volume[0]))
-        if ask_quantity > 0:
-            return 'buy', ask_quantity, adjusted_ask_price
-        else:
-            return 'hold', 0, 0
-    elif mid_price < adjusted_bid_price and ask_order_count[0] > order_count_threshold and available_Base > 0:
-        # Place a sell order as the mid-price is lower than adjusted bid price and order count is above the threshold
-        bid_quantity = min(float(bid_volume[0]), available_Base)
-        if bid_quantity > 0:
-            return 'sell', bid_quantity, adjusted_bid_price
-        else:
-            return 'hold', 0, 0
-    else:
-        return 'hold', 0, 0
+from cdc_trader.trader.trading_logic import dynamic_threshold_adjustment, trend_following_strategy_with_order_count
 
 # Initialize user accounts
 user = UserAccounts()

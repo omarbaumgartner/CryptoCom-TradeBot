@@ -1,8 +1,6 @@
 # coding: utf-8
 import numpy as np
-
-# pip install + follow this guide https://github.com/ta-lib/ta-lib-python
-import talib
+import talib # pip install + follow this guide https://github.com/ta-lib/ta-lib-python
 import statistics
 
 # Relative Strength Index
@@ -13,7 +11,6 @@ def getRSIs(closes, period):
         closes = [float(i) for i in closes]
         rsis = talib.RSI(np.array(closes), timeperiod=period)
         return rsis
-
 
 # Single Moving Average
 def getSMA(closes, period):
