@@ -14,6 +14,8 @@ from cdc_trader.api.cdc_api import generate_nonce
 from cdc_trader.api.cdc_api import get_orderbook, get_ticker
 from cdc_trader.trader.trading_logic import dynamic_threshold_adjustment, trend_following_strategy_with_order_count
 
+
+
 # Initialize user accounts
 user = UserAccounts()
 user.update_accounts()
