@@ -21,7 +21,7 @@ def apply_technical_analysis(df, params=None):
              'macd_long': 26}
 
     Returns:
-        pandas.DataFrame: DataFrame with technical analysis indicators added as columns.
+        tuple: A tuple containing the action to take ('buy', 'sell', or 'hold'), quantity, and price.
 
     Notes:
         This function calculates moving averages, RSI (Relative Strength Index), and MACD (Moving Average
@@ -33,44 +33,59 @@ def apply_technical_analysis(df, params=None):
         ...     'ma_short_window': 10,
         ...     'ma_long_window': 50,
         ...     'rsi_window': 14,
+        ...     'rsi_overbought': 70,
+        ...     'rsi_oversold': 30,
         ...     'macd_short': 12,
         ...     'macd_long': 26
         ... }
-        >>> result_df = apply_technical_analysis(df, params=parameters) 
+        >>> result = apply_technical_analysis(df, params=parameters) 
     """
-    
-    if params is None:
-        params = {
-            'ma_short_window': 10,
-            'ma_long_window': 50,
-            'rsi_window': 14,
-            'macd_short': 12,
-            'macd_long': 26
-        }
 
+    
     # Moving averages
-    df['short_mavg'] = df['close'].rolling(window=params['ma_short_window'], min_periods=1, center=False).mean()
-    df['long_mavg'] = df['close'].rolling(window=params['ma_long_window'], min_periods=1, center=False).mean()
+    short_ma_val = df['close'].rolling(window=params['ma_short_window'], min_periods=1, center=False).mean()
+    long_ma_val = df['close'].rolling(window=params['ma_long_window'], min_periods=1, center=False).mean()
 
     # RSI
-    df['rsi'] = rsi(df['close'], window=params['rsi_window'])
+    rsi_val = rsi(df['close'], window=params['rsi_window']).iloc[-1]
 
-    # MACD
-    df['macd'] = macd(close=df['close'], window_fast=params['macd_short'], window_slow=params['macd_long'])
+    # MACD : TODO integrate
+    #macd_val = macd(close=df['close'], window_fast=params['macd_short'], window_slow=params['macd_long'])
 
-    # Combine signals
-    df['combined_signal'] = 0
-    df['combined_signal'] += (df['short_mavg'] > df['long_mavg']).astype(int)
-    df['combined_signal'] += (df['rsi'] < 30).astype(int)
-    df['combined_signal'] += (df['rsi'] > 70).astype(int)
-    df['combined_signal'] += (df['macd'] > 0).astype(int)
+    # TODO : Add weights to each indicator  
     
-    # Interpret combined signal
-    df['signal'] = 0
-    df.loc[df['combined_signal'] > 1, 'signal'] = 1  # Buy if more than one indicator is positive
-    df.loc[df['combined_signal'] < -1, 'signal'] = -1  # Sell if more than one indicator is negative
+    # Combine signals
+    combined_signal = 0
+    combined_signal += 1 if (short_ma_val > long_ma_val).iloc[-1] else -1
+    combined_signal += 1 if rsi_val < params["rsi_overbought"] else (-1 if rsi_val > params["rsi_overbought"] else 0)
 
-    return df
+    # Interpret combined signal
+    #df['signal'] = 0
+    signal = 0
+    if combined_signal > 1:
+        signal = 1
+    elif combined_signal < -1:
+        signal = -1
+    
+    # Determine action based on signal
+    action = 'hold'
+    # TODO : Integrate quantity and price to match order book trading logic
+    quantity = 0
+    price = 0
+    
+    if signal == 1:
+        action = 'buy'
+        price = df['close'].iloc[-1]
+    elif signal == -1:
+        action = 'sell'
+        price = df['close'].iloc[-1]
+    else:
+        action = 'hold'
+
+    df.loc[df.index[-1], 'signal'] = signal
+
+
+    return action, quantity, price
 
 # market depth analysis based on order books
 
@@ -162,19 +177,23 @@ def trend_following_strategy_with_order_count(order_book_data, available_Base, a
     adjusted_bid_price = bid_prices[0] * (1 + transaction_fee)
     adjusted_ask_price = ask_prices[0] * (1 - transaction_fee)
 
+    action = 'hold'
+    quantity = 0
+    price = 0
+
     if mid_price > adjusted_ask_price and bid_order_count[0] > order_count_threshold and available_Quote > 0:
         # Place a buy order as the mid-price is higher than adjusted ask price and order count is above the threshold
         ask_quantity = min(available_Quote / adjusted_ask_price, float(ask_volume[0]))
         if ask_quantity > 0:
-            return 'buy', ask_quantity, adjusted_ask_price
-        else:
-            return 'hold', 0, 0
+            action = 'buy'
+            quantity = ask_quantity
+            price = adjusted_ask_price
     elif mid_price < adjusted_bid_price and ask_order_count[0] > order_count_threshold and available_Base > 0:
         # Place a sell order as the mid-price is lower than adjusted bid price and order count is above the threshold
         bid_quantity = min(float(bid_volume[0]), available_Base)
         if bid_quantity > 0:
-            return 'sell', bid_quantity, adjusted_bid_price
-        else:
-            return 'hold', 0, 0
-    else:
-        return 'hold', 0, 0
+            action = 'sell'
+            quantity = bid_quantity
+            price = adjusted_bid_price
+    
+    return action,quantity,price

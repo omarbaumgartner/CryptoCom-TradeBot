@@ -102,7 +102,7 @@ def get_candlesticks(instrument_name, interval)->dict:
     """
     response = requests.get(REST_BASE + 'public/get-candlestick',
                             params={'instrument_name': instrument_name, 'interval': interval})
-    
+
     return response.json()['result']
 
 

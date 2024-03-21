@@ -1,7 +1,15 @@
-from cdc_trader.api.cdc_api import *
 from datetime import datetime
 import csv
 from pathlib import Path
+import sys,os
+# Get the absolute path of the parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Get the absolute path of the grandparent directory
+grandparent_dir = os.path.abspath(os.path.join(parent_dir, '..'))
+# Append the grandparent directory to sys.path
+sys.path.append(grandparent_dir)
+from cdc_trader.api.cdc_api import *
+
 # Pull candlesticks of instrument based on a specific interval, save it to csv
 # It will then be used for vizualisation and backtesting
 def candles_to_csv(output_folder,timestamp, instrument_name, period, candles):
@@ -35,11 +43,12 @@ def get_usable_instruments(ticker):
 data_folder = "data"
 ticker = get_ticker()
 
-periods = ["1m", "5m", "15m", "30m", "1h", "4h", "6h", "12h"]
+instruments = ['BTC_USD']
+#periods = ["1m", "5m", "15m", "30m", "1h", "4h", "6h", "12h"]
+periods = ["30m", "1h"]
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 #instruments = get_usable_instruments(ticker)
-instruments = ['ARKM_USD']
 for instrument_name in instruments:
     output_folder = f"{data_folder}/{instrument_name}"
     

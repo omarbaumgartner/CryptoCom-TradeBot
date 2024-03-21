@@ -77,38 +77,38 @@ while True:
     )
 
     # Use the dynamically adjusted threshold in the trading strategy
-    side, quantity, price = trend_following_strategy_with_order_count(
+    action, quantity, price = trend_following_strategy_with_order_count(
         data, available_Base,available_Quote, 0.00075, order_count_threshold
     )
 
     with open(backtesting_filename, 'a') as log_file:
-        log_message(log_file, f"Signal: {side} Quantity: {quantity} Price: {price}\n Available {base}: {available_Base} Available {quote}: {available_Quote}",print_message=False)
+        log_message(log_file, f"Signal: {action} Quantity: {quantity} Price: {price}\n Available {base}: {available_Base} Available {quote}: {available_Quote}",print_message=False)
 
     # Looking for trade
     if not waiting_for_order:
 
-        if side == 'buy' and available_Quote > 0:
+        if action == 'buy' and available_Quote > 0:
             # Place a buy order
             with open(backtesting_filename, 'a') as log_file:
                 log_message(log_file, f"Placing buy order for {quantity} {base} at {price} {quote}")
             order_price = price
-            order_side = side
+            order_side = action
             order_quantity = quantity
             order_nonce = int(generate_nonce())
             waiting_for_order = True
             
-        elif side == 'sell' and available_Base > 0:
+        elif action == 'sell' and available_Base > 0:
             with open(backtesting_filename, 'a') as log_file:
                 log_message(log_file, f"Placing sell order for {quantity} {base} at {price} {quote}")
             order_price = price
-            order_side = side
+            order_side = action
             order_quantity = quantity
             order_nonce = int(generate_nonce())
             waiting_for_order = True
         
         else :
             with open(backtesting_filename, 'a') as log_file:
-                log_message(log_file, f"Signal: {side}")
+                log_message(log_file, f"Signal: {action}")
         time.sleep(sleep_time_no_order_seconds)
     else:
         with open(backtesting_filename, 'a') as log_file:
